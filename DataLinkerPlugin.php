@@ -60,7 +60,7 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 
 }
 
-add_filter(array('Display', 'Item', 'Dublin Core', 'Type'), 'my_type_link_function');
+add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'), 'my_type_link_function');
 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_extreme_hide');
 #add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'my_text_link_function');
 
