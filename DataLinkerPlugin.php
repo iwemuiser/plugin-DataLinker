@@ -32,8 +32,8 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     {
         queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
         add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'), 'my_type_link_function');
-        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_extreme_hide');
-        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_author_hide');
+        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_extreme_hide', 5);
+        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_author_hide', 6);
 
     }
 	
