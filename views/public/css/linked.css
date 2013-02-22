@@ -2,6 +2,7 @@
 .hover-type {
 	border-bottom: 1px dotted #000000;
 	color: #000000;
+	font-color: #FFF;
 	outline: none;
 	cursor: help; 
 	text-decoration: none;
@@ -18,9 +19,10 @@
 	box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
 	-webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.3);
 	-moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.3);
-	background-color: #333;
+	background-color: #DDD;
 	font-family: Calibri, Tahoma, Geneva, sans-serif;
-	font-size: 1.0em;
+	font-size: 1.2em;
+	font-color: #FFF;
 	position: absolute; 
 	left: 1em; 
 	top: 1em; 

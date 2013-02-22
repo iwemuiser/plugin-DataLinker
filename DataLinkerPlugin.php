@@ -3,7 +3,7 @@
 class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 {
 	protected $_hooks = array('public_head',
-                                'initialize');
+                            'initialize');
 	
 	protected $_filters = array('record_metadata_elements',
 #                                'admin_navigation_main',
@@ -34,7 +34,6 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
         add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'), 'my_type_link_function');
         add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_extreme_hide', 5);
         add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'text_author_hide', 6);
-
     }
 	
 	public function filterRecordMetadataElements($elementSets)
@@ -52,15 +51,28 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 add_filter(array('Display', 'Item', 'Dublin Core', 'Source'), 'make_urls_clickable_in_text');
 
 function make_urls_clickable_in_text($args){
-	return url_to_link($args);
+    return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/[^()<>\s]+)#i', '\\1<a target="linked" href="\\2">\\2</a>', $args);
+#	return url_to_link($args);
 }
+
+
+
 
 function my_type_link_function($args)
 {
 	if ($args){
-		$btext = str_replace(" ", "+", $args);
 		$type_information = get_type_info($args);
-		$return_this = "<a class='hover-type' href='/omeka2/items/browse?search=&advanced%5B0%5D%5Belement_id%5D=51&advanced%5B0%5D%5Btype%5D=is+exactly&advanced%5B0%5D%5Bterms%5D=$btext'>$args<span class='classic'><br>$type_information</span></a>";
+		$search_url = url(array('module'=>'items','controller'=>'browse'), 
+		            'default', 
+		            array("search" => "",
+		                "submit_search" => "Zoeken",
+		                "advanced[0][element_id]" => "49",
+		                "advanced[0][type]" => "is exactly",
+		                "advanced[0][terms]" => "$args",
+		                "collection" => "1",
+		                )
+		            );
+        $return_this = "<a class='hover-type' href='$search_url'>$args <span>$type_information</span></a>";
 		return $return_this;
 	}
 	else{
@@ -106,15 +118,6 @@ function text_extreme_hide($args){
 		return false;
 	}
 }
-
-/*
-function my_text_link_function($text, $record, $elementText)
-{
-	$return_this = "<div class = 'story-text'>$text</div>";
-#	$return_this = "<div class='bl'><div class='br'><div class='tl'><div class='tr'><div class = 'story-text'>$text</div></div></div></div></div><div class='clear'>&nbsp;</div>";
-    return $return_this;
-}
-*/
 
 function get_element_info_dynamic($search_string, $dublin_element_name, $show_elements_dublin = null, $show_elements_itemtype = null)
 {
@@ -176,12 +179,10 @@ function get_type_info($search_string)
 	if (count($itemIds) == 1){ //NOG EVEN MEE VERDER STOEIEN
 		$temp_item = "";
 		$found_item = get_record_by_id('item', $itemIds[0]["id"]);
-		$temp_return = "<br><SPAN class='classic'>";
-		$temp_return .= metadata($found_item, array('Dublin Core', 'Title')) . "<br>";
+		$temp_return = metadata($found_item, array('Dublin Core', 'Title')) . "<br>";
 		$temp_return .= metadata($found_item, array('Dublin Core', 'Creator')) . "<br>";
 		$temp_return .= metadata($found_item, array('Dublin Core', 'Publisher')) . "<br>";
 		$temp_return .= metadata($found_item, array('Item Type Metadata', 'Subgenre')) . "<br>";
-		$temp_return .= "</SPAN>";
 		return $temp_return;
 	}
 	return "no description";
