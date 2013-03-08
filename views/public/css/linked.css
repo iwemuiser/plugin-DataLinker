@@ -21,14 +21,15 @@
 	-moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.3);
 	background-color: #DDD;
 	font-family: Calibri, Tahoma, Geneva, sans-serif;
-	font-size: 1.2em;
+	font-size: 1.1em;
 	font-color: #FFF;
 	position: absolute; 
 	left: 1em; 
-	top: 1em; 
+	top: -4em; 
 	z-index: 99;
-	margin-left: 0; 
-	width: 200%;
+	margin-left: 12em; 
+	width: 300%;
+	opacity: 0.8;
 }
 .hover-type:hover img {
 	border: 0; margin: -10px 0 0 -25px;
