@@ -1,44 +1,45 @@
-/*TEMPORARY HOVER TOOLTIP*/
-.hover-type {
-	border-bottom: 1px dotted #000000;
-	color: #000000;
-	font-color: #FFF;
-	outline: none;
-	cursor: help; 
-	text-decoration: none;
-	position: relative;
+.toggler{
+	cursor: help;
 }
-.hover-type span {
-	margin-left: -999em;
-	position: absolute;
-}
-.hover-type:hover span {
-	border-radius: 1px 1px; 
-	-moz-border-radius: 10px; 
-	-webkit-border-radius: 10px; 
-	box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
-	-webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.3);
-	-moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.3);
-	background-color: #DDD;
+.slider{
+	display:none;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+    border: 4px solid #aaa;
+
+    padding: 5px 5px;
 	font-family: Calibri, Tahoma, Geneva, sans-serif;
-	font-size: 1.1em;
-	font-color: #FFF;
-	position: absolute; 
-	left: 1em; 
-	top: -4em; 
-	z-index: 99;
-	margin-left: 12em; 
-	width: 300%;
-	opacity: 0.8;
+	width: 60%;
+	font-size: 1.0em;
 }
-.hover-type:hover img {
-	border: 0; margin: -10px 0 0 -25px;
-	float: left; position: absolute;
+.up, .down{
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #aaa;
+    padding: 5px 5px;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 1px 1px #000;
+	cursor: help;
+	width: 160px;
 }
-.hover-type:hover em {
-	font-family: Candara, Tahoma, Geneva, sans-serif; 
-	font-size: 1.0em; 
-	font-weight: bold;
-	display: block; 
-	padding: 0.2em 0 0.6em 0;
+.collapseSlider{
+/*    background: url(min.gif) no-repeat left top;*/
+	display:none;	
+}
+.sliderExpanded .collapseSlider{
+/*    background: url(min.gif) no-repeat left top;
+    padding-left: 10px;*/
+	display:block;
+}
+.sliderExpanded .expandSlider{
+/*    background: url(plus.gif) no-repeat left top;
+    padding-left: 10px;*/
+	display:none;
 }
