@@ -56,6 +56,7 @@ function present_dates_as_language($args){
 }
 
 function jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, $itemset = 'Dublin Core'){
+    if (empty($args)){ return $args; }
     $type_information = $args;
     if (get_element_by_value($args, $search_element) && $search_element){
         $element_texts = get_element_by_value($args, $search_element)->getElementTexts($itemset, $return_element);
@@ -64,8 +65,8 @@ function jquery_double_field_info($subject_element_number, $search_element, $ret
     $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $args);
     $html = '
         <p class="toggler" id="toggler-'.$pasted_args.'">
-            <span class="expandSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "' . url("plugins/Datalinker/views/shared/images/down.gif").'"></span>
-            <span class="collapseSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "'   . url("plugins/Datalinker/views/shared/images/up.gif").'"></span>
+            <span class="expandSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "' . url("themes/verhalenbank/images/down.gif").'"></span>
+            <span class="collapseSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "'   . url("themes/verhalenbank/images/up.gif").'"></span>
         </p>
         <div class="slider" id="'.$pasted_args.'">'
             . info_search_link($subject_element_number, $args, $collection) . '<br/>'

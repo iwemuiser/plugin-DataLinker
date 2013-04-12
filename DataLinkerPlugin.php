@@ -14,8 +14,9 @@ require_once DATALINKER_PLUGIN_DIR . '/public_functions.php';
 class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 {
 	protected $_hooks = array('public_head',
-                                'public_items_show_top',
+#                                'public_items_show_top',
                                 'public_items_show_sidebar_top',
+                                'public_items_show_sidebar_ultimate_top',
 	                            'admin_head',
 #	                            'admin_items_show',
                                 'initialize');
@@ -27,9 +28,9 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 #                                'public_navigation_main'
                                 );
 
-    public $_metadata_public_hide = array("Dublin Core" => array("Contribution", "Rights", "Creator"),
+    public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights", "Creator"), #CREATOR TEMPORARY
                                             "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date"));
-                                            
+    
     public $_metadata_to_the_right = array("Dublin Core" => array("Creator", "Contributor", "Type", "Language"),
                                             "Item Type Metadata" => array("Collector"));
 
@@ -45,23 +46,23 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     public function filterDisplayElements($elementSets) {
-        if ($user = current_user()){ #don't filter this stuff out when logged in
-            return $elementSets;
-        }
-        //here we filter the elements that should not be seen by the public
+        //here we take out the elements that will be shown on the div on the metadata div
         foreach($elementSets as $setName=>$elements) {
             foreach($elements as $element) {
-                foreach($this->_metadata_to_the_right as $sn=>$el){ #omitting the element set names
+                foreach($this->_metadata_to_the_right as $sn=>$el){
                     if(in_array($element->name, $el)){
                         unset($elementSets[$setName][$element->name]);
                     }
                 }
             }
         }
-        //here we take out the elements that will be shown on the div on the metadata div
+        if ($user = current_user()){ #don't filter this stuff out when logged in
+            return $elementSets;
+        }
+        //here we filter the elements that should not be seen by the public
         foreach($elementSets as $setName=>$elements) {
             foreach($elements as $element) {
-                foreach($this->_metadata_public_hide as $sn=>$el){
+                foreach($this->_metadata_public_hide as $sn=>$el){ #omitting the element set names
                     if(in_array($element->name, $el)){
                         unset($elementSets[$setName][$element->name]);
                     }
@@ -72,26 +73,26 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     public function hookPublicItemsShowSidebarTop($args){
-        if ($user = current_user()){ #don't filter this stuff out when logged in
-            return;
-        }
+        $_metadata_fields_public_hide = array_merge($this->_metadata_public_hide["Dublin Core"], $this->_metadata_public_hide["Item Type Metadata"]);
         $item = $args['item'];
         print '<div id="item-metadata" class="element">';
         print '<h2>Metadata</h2>';
         foreach($this->_metadata_to_the_right as $setName=>$elements) {
             foreach($elements as $element) {
-                if (!empty($element)){
-                    print '<div id="" class="element">';
-                    print "<h3>" . $element . " </h3>";
-                    print '<div class="element-text">' . metadata('item', array($setName, $element)) . "</div>";
-                    print '</div>';
+                if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publicly AND if a user is logged in
+                    if (strlen(metadata('item', array($setName, $element))) > 0){ // don't show when empty
+                        print '<div id="" class="element">';
+                        print "<h3>" . __($element) . " </h3>";
+                        print '<div class="element-text">' . metadata('item', array($setName, $element)) . "</div>";
+                        print '</div>';
+                    }
                 }
             }
         }
         print "</div>";
     }
 
-    public function hookPublicItemsShowTop($args){
+    public function hookPublicItemsShowSidebarUltimateTop($args){
         print "<ul class='slide-toggle'>";
         print '<li class="up" id="slidetoggle">'.__("Informatie uitklappen").'</li>';
         print '<li class="down" id="slidetoggle" style="display:none;">'.__("Informatie inklappen").'</li>';
