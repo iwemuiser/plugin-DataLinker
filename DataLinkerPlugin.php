@@ -17,8 +17,9 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 #                                'public_items_show_top',
                                 'public_items_show_sidebar_top',
                                 'public_items_show_sidebar_ultimate_top',
-	                            'admin_head',
+                                'admin_head',
 #	                            'admin_items_show',
+                                'admin_items_show_sidebar',
                                 'initialize');
 	
 	protected $_filters = array('display_elements',
@@ -39,6 +40,14 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInitialize(){
     }
+
+	/**
+	* admin_items_show_sidebar
+	*   
+	**/
+    public function hookAdminItemsShowSidebar($args){
+        contributor_information_tab_admin($args);
+	}
 
     public function filterItemCitation($citation, $args) {
         $citation = "None";

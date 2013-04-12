@@ -26,4 +26,26 @@ function subject_info_retrieve_box($args){
    }
    return "something went wrong";
 }
+
+
+/**
+* contributor_information_tab_admin
+*   Adds a div with user information concerning the item
+**/
+function contributor_information_tab_admin($args){
+    $item = $args['item'];
+    $recordId = $item->id;
+
+    $owner = get_db()->getTable('User')->find(metadata($item, "owner_id"))->name;
+
+    echo "<div class='panel'>";
+    
+    echo "<h4>" . __("Contributor information") . "</h4><br>";
+
+    echo "<p><b>added</b>: " . metadata($item, "added") . "</p>";
+    echo "<p><b>by</b>: " . $owner . "</p>";
+    echo "<p><b>modif.</b>: " . metadata($item, "modified") . "</p>";
+    
+    echo "</div>";
+}
 ?>
