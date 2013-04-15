@@ -240,4 +240,20 @@ function my_type_link_function_admin($args){
 	return "No value";
 }
 
+/**
+ * Return the site-wide search form.
+ * 
+ * @package Omeka\Function\Search
+ * @param array $options Valid options are as follows:
+ * - show_advanced (bool): whether to show the advanced search; default is false.
+ * - submit_value (string): the value of the submit button; default "Submit".
+ * - form_attributes (array): an array containing form tag attributes.
+ * @return string The search form markup.
+ */
+function search_form_extended(array $options = array())
+{
+    return get_view()->searchForm($options);
+}
+
+
 ?>
