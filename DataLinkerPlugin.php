@@ -42,41 +42,52 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     }
 
 	/**
-	* admin_items_show_sidebar
-	*   
+	*   admin_items_show_sidebar
+	*   information about the contributor is added on the botton of the sidebar panel
 	**/
     public function hookAdminItemsShowSidebar($args){
         contributor_information_tab_admin($args);
 	}
+
 
     public function filterItemCitation($citation, $args) {
         $citation = "None";
         return $citation;
     }
 
+    /**
+    *   filterDisplayElements:
+    *   Here we filter the elements based on the variables $_metadata_public_hide and $_metadata_to_the_right
+    *   
+    *               To do: NOT IN ADMIN MODE
+    **/
+
     public function filterDisplayElements($elementSets) {
-        //here we take out the elements that will be shown on the div on the metadata div
-        foreach($elementSets as $setName=>$elements) {
-            foreach($elements as $element) {
-                foreach($this->_metadata_to_the_right as $sn=>$el){
-                    if(in_array($element->name, $el)){
-                        unset($elementSets[$setName][$element->name]);
+        if (!is_admin_theme()) { #only in the public view!
+            //here we take out the elements that will be shown on the div on the metadata div
+            foreach($elementSets as $setName=>$elements) {
+                foreach($elements as $element) {
+                    foreach($this->_metadata_to_the_right as $sn=>$el){
+                        if(in_array($element->name, $el)){
+                            unset($elementSets[$setName][$element->name]);
+                        }
                     }
                 }
             }
-        }
-        if ($user = current_user()){ #don't filter this stuff out when logged in
+            if ($user = current_user()){ #don't filter this stuff out when logged in
+                return $elementSets;
+            }
+            //here we filter the elements that should not be seen by the public
+            foreach($elementSets as $setName=>$elements) {
+                foreach($elements as $element) {
+                    foreach($this->_metadata_public_hide as $sn=>$el){ #omitting the element set names
+                        if(in_array($element->name, $el)){
+                            unset($elementSets[$setName][$element->name]);
+                        }
+                    }
+                }
+            }
             return $elementSets;
-        }
-        //here we filter the elements that should not be seen by the public
-        foreach($elementSets as $setName=>$elements) {
-            foreach($elements as $element) {
-                foreach($this->_metadata_public_hide as $sn=>$el){ #omitting the element set names
-                    if(in_array($element->name, $el)){
-                        unset($elementSets[$setName][$element->name]);
-                    }
-                }
-            }
         }
         return $elementSets;
     }
