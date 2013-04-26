@@ -1,19 +1,22 @@
 <?php
-if (!defined('DATALINKER_PLUGIN_DIR')) {
-    define('DATALINKER_PLUGIN_DIR', dirname(__FILE__));
+if (!defined('VERHALENBANKFUNCTIONS_PLUGIN_DIR')) {
+    define('VERHALENBANKFUNCTIONS_PLUGIN_DIR', dirname(__FILE__));
 }
-if (!defined('DATALINKER_IMAGE_DIR')) {
-    define('DATALINKER_IMAGE_DIR', dirname(__FILE__) . "/views/shared/images");
+if (!defined('VERHALENBANKFUNCTIONS_IMAGE_DIR')) {
+    define('VERHALENBANKFUNCTIONS_IMAGE_DIR', dirname(__FILE__) . "/views/shared/images");
 }
 
-require_once DATALINKER_PLUGIN_DIR . '/helpers/ElementFunctions.php';
-require_once DATALINKER_PLUGIN_DIR . '/admin_functions.php';
-require_once DATALINKER_PLUGIN_DIR . '/public_functions.php';
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/ElementFunctions.php';
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/admin_functions.php';
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/public_functions.php';
 
 
-class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
+class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 {
-	protected $_hooks = array('public_head',
+	protected $_hooks = array('install',
+	                            'public_head',
+                                'config_form',
+                                'config',
 #                                'public_items_show_top',
                                 'public_items_show_sidebar_top',
                                 'public_items_show_sidebar_ultimate_top',
@@ -34,6 +37,50 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     
     public $_metadata_to_the_right = array("Dublin Core" => array("Creator", "Contributor", "Type", "Language"),
                                             "Item Type Metadata" => array("Collector"));
+
+
+    public function hookConfigForm()
+    {
+        // If necessary, upgrade the plugin options
+        include 'config_form.php';        
+    }
+
+    public function hookConfig($args)
+    {
+        $post = $args['post'];
+        set_option('textcopyrightwarning', $post['textcopyrightwarning']);
+        set_option('textextremewarning', $post['textextremewarning']);
+        set_option('imagewarning', $post['imagewarning']);
+        set_option('kloekelink', $post['kloekelink']);
+        set_option('subcollectionswithtypes', $post['subcollectionswithtypes']);
+        set_option('mediumsearchablefields', $post['mediumsearchablefields']);
+        set_option('mediumsearchstyle', $post['mediumsearchstyle']);
+    }
+    
+    public function hookInstall(){
+        set_option('textcopyrightwarning', 
+            "<p style = 'color:red'><b>Auteursrecht:</b></p> 
+De tekst bevat auteursrechtelijk beschermde informatie. 
+De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
+<br>
+This text contains copyrighted information.");
+
+        set_option('textextremewarning', 
+            "<p style = 'color:red'><b>Extreme:</b></p> 
+Dit record bevat extreme elementen van enigerlei aard (racisme, sexisme, schuttingtaal, godslastering, expliciete naaktheid, majesteitsschennis). 
+De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
+<br>
+This text contains language that can be perceived as extreme.");
+
+        set_option('imagewarning', 
+            "<p style = 'color:red'>Waarschuwing: </p>Dit bestand bevat auteursrechtelijke informatie of bevat extreme facetten. <br>
+De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut, of met een admin account.");
+
+        set_option('kloekelink', 'http://www.meertens.knaw.nl/kaart/v3/rest/?type=dutchlanguagearea&data[]=');
+        set_option('subcollectionswithtypes', "2,6,7");
+        set_option('mediumsearchablefields', "43,49,50,60,44,48,39,40,61,58,52,41,63,66,93,65,53,67,51,1");
+        set_option('mediumsearchstyle', "contains");
+    }
 
     /**
      * Initialize the plugin.
@@ -61,7 +108,6 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     *   
     *               To do: NOT IN ADMIN MODE
     **/
-
     public function filterDisplayElements($elementSets) {
         if (!is_admin_theme()) { #only in the public view!
             //here we take out the elements that will be shown on the div on the metadata div
@@ -126,8 +172,9 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     	}
         $file = $args['file'];
         if((metadata($file, array('Dublin Core', 'Rights')) == 'nee') || (metadata($file, array('Dublin Core', 'Relation')) == 'ja')){
-            return '<p>Een bestand bevat auteursrechtelijke informatie of bevat extreme facetten. 
-            <br>De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut, of met een admin account.<br><br></p>';
+            return get_option('imagewarning'); 
+            /*'<p>Een bestand bevat auteursrechtelijke informatie of bevat extreme facetten. 
+            <br>De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut, of met een admin account.<br><br></p>';*/
         }
         return $html;
     }
@@ -148,16 +195,20 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
     {
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
         queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
-        queue_js_file('showHide');  
+        queue_js_file('showHide');
         $view = get_view();
         if(isset($view->item)) {
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
+            if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
+            }
             add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
+
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
@@ -168,37 +219,31 @@ class DataLinkerPlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookAdminHead($args)
     {
-        add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_box', 7);
-#        queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
-#        add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'), 'my_type_link_function_admin');
-#        add_filter(array('Display', 'Item', 'Dublin Core', 'Source'), 'make_urls_clickable_in_text');
-#        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'), 'my_kloeke_link_function', 4);
-        add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'), 'make_urls_clickable_in_text');
-        add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'), 'all_items_with_this_subject', 10);
-#        add_filter(array('Display', 'Item', 'Dublin Core', 'Description'), 'dummy_printer');
+        $view = get_view();
+        if(isset($view->item)) {
+            if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
+            }
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
+
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
+        }
     }
 
     public function filterPublicNavigationMain($args){
         #ONLY FOR NAVIGATION
     }
-    
-    public function hookAdminItemsShow2($args)
-    {
-        if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-            $search_url = url(array('module'=>'items','controller'=>'browse'), 
-                            'default', 
-                            array("search" => "",
-                                "submit_search" => "Zoeken",
-                                "advanced[0][element_id]" => "49",
-                                "advanced[0][type]" => "is exactly",
-                                "advanced[0][terms]" => "$args",
-                                )
-                            );
-            print "<a class='small blue advanced-search-link button' href='$search_url'>alle items van dit type</a>";
-        }
-    }
 }
-
 
 #add_filter(array('Display', 'Item', 'Item Type Metadata', 'Comments'), 'dummy_printer', 5);
 
@@ -212,44 +257,10 @@ function make_urls_clickable_in_text($args){
 }
 
 function my_kloeke_link_function($args){
-    $kloeke_link = "http://www.meertens.knaw.nl/kaart/v3/rest/?type=dutchlanguagearea&data[]=$args";
+    $kloeke_link = get_option('kloekelink') . $args;
     return "<a href='$kloeke_link'>$args</a>";
 }
 
-function all_items_with_this_subject($args){
-    if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-        $search_url = url(array('module'=>'items','controller'=>'browse'), 
-                        'default', 
-                        array("search" => "",
-                            "submit_search" => "Zoeken",
-                            "advanced[0][element_id]" => "49",
-                            "advanced[0][type]" => "is exactly",
-                            "advanced[0][terms]" => "$args",
-                            )
-                        );
-        return "$args <a class='small blue advanced-search-link button' href='$search_url'>alle items van dit type</a>";
-    }
-    return $args;
-}
-
-
-function my_type_link_function_admin($args){
-    if ($args){
-        $type_information = get_type_info($args);
-        $search_url = url(array('module'=>'items','controller'=>'browse'), 
-                        'default', 
-                        array("search" => "",
-                            "submit_search" => "Zoeken",
-                            "advanced[0][element_id]" => "49",
-                            "advanced[0][type]" => "is exactly",
-                            "advanced[0][terms]" => "$args",
-                            )
-                        );
-        return "link";
-        return "<a class='hover-type' href='$search_url'>$args</a> <span> - $type_information</span>";
-    }
-	return "No value";
-}
 
 /**
  * Return the site-wide search form.

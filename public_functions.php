@@ -1,11 +1,19 @@
 <?php
 
+function identifier_info_retrieve_popup_jquery($args){
+    $subject_element_number = 49; //subject zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
 function type_info_retrieve_popup_jquery($args){
     $subject_element_number = 51; #Type
     $search_element = null;
     $return_element = null;
     $collection = 1;
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
 function subgenre_info_retrieve_popup_jquery($args){
@@ -13,8 +21,8 @@ function subgenre_info_retrieve_popup_jquery($args){
     $search_element = null;
     $return_element = null;
     $collection = 1;
-    $itemset = "Item Type Metadata";
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+    $return_itemset = "Item Type Metadata";
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
 function subject_info_retrieve_popup_jquery($args){
@@ -22,15 +30,17 @@ function subject_info_retrieve_popup_jquery($args){
     $search_element = "Identifier";
     $return_element = "Title";
     $collection = 1;
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
 function creator_info_retrieve_popup_jquery($args){
     $subject_element_number = 39; #Creator
-    $search_element = "Title";
-    $return_element = "Title";
-    $collection = 4;
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+#    $search_element = "Title";
+#    $return_element = "Title";
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
 
@@ -39,7 +49,7 @@ function language_info_retrieve_popup_jquery($args){
     $search_element = null;
     $return_element = null;
     $collection = 1;
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
 function collector_info_retrieve_popup_jquery($args){
@@ -47,48 +57,140 @@ function collector_info_retrieve_popup_jquery($args){
     $search_element = null;
     $return_element = null;
     $collection = 1;
-    $itemset = "Item Type Metadata";
-    return jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, $itemset);
+    $return_itemset = "Item Type Metadata";
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, $return_itemset);
 }
 
 function present_dates_as_language($args){
     return $args;
 }
 
-function jquery_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, $itemset = 'Dublin Core'){
-    if (empty($args)){ return $args; }
-    $type_information = $args;
-    if (get_element_by_value($args, $search_element) && $search_element){
-        $element_texts = get_element_by_value($args, $search_element)->getElementTexts($itemset, $return_element);
-        $type_information = $args . " - " . $element_texts[0]["text"];
+function double_field_info($subject_element_number, $search_element = null, $return_element = null, $collection = null, $original_value = null, $return_itemset = 'Dublin Core'){
+#    print "-" . $subject_element_number . " - ". $search_element . " - ". $return_element . " - ". $collection . " - ". $original_value . " - ". $return_itemset;
+    $html = "";
+    $links = array();
+    $supplemented_value = $original_value;
+    $additional_information = null;
+    if (!empty($original_value) && $search_element && $return_element){
+        $additional = get_element_by_value($original_value, $search_element);
+        if ($additional) { 
+            $additional_information_pre = $additional->getElementTexts($return_itemset, $return_element);
+            $additional_information = $additional_information_pre[0]["text"];
+        }
     }
-    $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $args);
-    $html = '
-        <p class="toggler" id="toggler-'.$pasted_args.'">
-            <span class="expandSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "' . url("themes/verhalenbank/images/down.gif").'"></span>
-            <span class="collapseSlider">' . $type_information . ' &nbsp&nbsp&nbsp <img src= "'   . url("themes/verhalenbank/images/up.gif").'"></span>
-        </p>
-        <div class="slider" id="'.$pasted_args.'">'
-            . info_search_link($subject_element_number, $args, $collection) . '<br/>'
-            . info_item_link($search_element, $args) . '
-        </div>';
+    $links[] = info_search_link($subject_element_number, $original_value, $collection);
+    $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");         // check if the link to the item can be found
+    $links[] = info_item_link("Subject", $original_value, 2, "in lexicon");      //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");     //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");        //check if the value can be found in subcollection Lexicon
+    if (is_admin_theme()) {
+        $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
+    }
+    else{
+        $html = browse_link_in_toggler($original_value, $additional_information, $links);   // the additional information is put in a jquery toggler
+#        $html = browse_link_in_menu($original_value, $additional_information, $links);   // a menu with hover
+    }
     return $html;
 }
 
-function info_item_link($element_name, $search_term){
-#    $element = get_db()->getTable("Element")->find($element_number);
-#    $element_name = $element->name;
-    if (get_element_by_value($search_term, $element_name)){
-        $url = record_url(get_element_by_value($search_term, $element_name), 'show');
-        return '<a href='.$url.'>Alle informatie over ' . $search_term . '</a>';
+function browse_link_in_menu($original_value, $additional_information, $links){
+    $html = $original_value;
+    $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
+    if ($supplemented_value){
+        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value);
+        $html = '
+        <div id="button">
+            <ul class="hover">
+               <li class="hoverli">
+                   <p>' . $supplemented_value . '</p>
+                    <ul class="file_menu">';
+        foreach ($links as $link){
+            if ($link){$html .= '<li>'.$link.'</li>';}
+        }
+        $html .= '  </ul>
+                <li>
+            </ul>
+        </div>';
+    }
+    return $html;
+}
+
+
+function browse_link_in_toggler($original_value, $additional_information, $links){
+    $html = $original_value;
+    $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
+    if ($supplemented_value){
+        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value);
+        $html = '
+            <p class="toggler" id="toggler-' . $pasted_args . '">
+                <span class="expandSlider">' . $supplemented_value . ' &nbsp&nbsp&nbsp <img src= "' . url("themes/verhalenbank/images/down.gif").'"></span>
+                <span class="collapseSlider">' . $supplemented_value . ' &nbsp&nbsp&nbsp <img src= "'   . url("themes/verhalenbank/images/up.gif").'"></span>
+            </p>
+            <div class="slider" id="'.$pasted_args.'">';
+        foreach ($links as $link){ $html .= $link;}
+        $html .= '</div>';
+    }
+    return $html;
+}
+
+function browse_link_in_table($original_value, $additional_information, $links){
+    $html = 
+        '<table>
+            <tr><td>'. $original_value . '</td>
+            <td>';
+    foreach ($links as $link){ $html .= $link;}
+    $html .= '</td>';
+    
+    if ($additional_information){
+        $html .= '    <tr>
+                <th colspan="2">' . 
+                    $additional_information . '<br />
+                </th>
+            </tr>';
+    }
+        $html .= '</table>';
+    return $html;
+}
+
+
+function info_item_link($element_name, $search_term, $collection_id = NULL, $ga_naar_text = ""){
+    if (get_element_by_value($search_term, $element_name, $collection_id)){
+        $url = record_url(get_element_by_value($search_term, $element_name, $collection_id), 'show');
+        return '<a href='.$url.'>' . $search_term . ' '  . $ga_naar_text . '</a><br>';
     }
     return "";
 }
 
 function scroll_to_full_text($args){
-    return $args . "<br><b><a id='text-scroll' href='#volksverhaal-item-type-metadata-text'>" . __("Bekijk volledige tekst") . "</a></b>";
+    $itemtype = "volksverhaal";
+    return $args . "<br><b><a id='text-scroll' href='#$itemtype-item-type-metadata-text'>" . __("Bekijk volledige tekst") . "</a></b>";
 }
 
+
+/*
+*   returns links to an items in subcollections containing this Id
+*   @arguments:
+*   
+* @param int $element_number     The element number to be searched in
+* @param int $search_term       The term that should be searched for
+* @return string                Links to items in subcollections
+*/
+function info_subcollection_items($element_number, $search_term, $collections = array(2,6,7)){
+    $element = get_db()->getTable("Element")->find($element_number);
+    $element_name = $element->name;
+    $links = "";
+    foreach($collections as $collection){
+        $taletype_search_url = url(array('module'=>'items','controller'=>'browse'), 'default', 
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => $collection,
+                                    "advanced[0][element_id]" => "$element_number",
+                                    "advanced[0][type]" => "is exactly",
+                                    "advanced[0][terms]" => "$search_term"));
+        $links .= "<a href='".$taletype_search_url."'> " . __($element_name) . get_record_by_id('Collection', $collection)->name . ": " . $search_term . "</a><br>";
+    }
+    return $links;
+}
 
 /*
 *   returns hidden HTML with links to an item and to a list of items containing this Id
@@ -108,7 +210,7 @@ function info_search_link($element_number, $search_term, $collection = 1){
                                 "advanced[0][element_id]" => "$element_number",
                                 "advanced[0][type]" => "is exactly",
                                 "advanced[0][terms]" => "$search_term"));
-    return "<a href='".$taletype_search_url."'>Alle verhalen met " . __($element_name) . ": " . $search_term . "</a>";
+    return "<a href='".$taletype_search_url."'>Alles met " . __($element_name) . ": " . $search_term . "</a><br>";
 }
 
 function text_copyright_hide($args){
@@ -117,11 +219,12 @@ function text_copyright_hide($args){
 	}
 	if ($args){
 		if (metadata(get_current_record('item'), array('Dublin Core', 'Rights')) == "nee"){
-			return "<b textcolor = 'red'>Auteursrecht:</b> 
+            return get_option('textcopyrightwarning');
+			/*"<p textcolor = 'red'><b>Auteursrecht:</b></p>
 			De tekst bevat auteursrechtelijk beschermde informatie. 
 			De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
 			<br>
-			This text contains copyrighted information.";
+			This text contains copyrighted information.";*/
 		}
 		else{
 			return $args;
@@ -139,11 +242,12 @@ function text_extreme_hide($args){
 	}
 	if ($args){
 		if (metadata(get_current_record('item'), array('Item Type Metadata', 'Extreme')) == "ja"){
-			return "<b textcolor = 'red'>Extreme:</b> 
+			return get_option('textextremewarning');
+/*			"<p textcolor = 'red'><b>Extreme:</b></p> 
 			Dit record bevat extreme elementen van enigerlei aard (racisme, sexisme, schuttingtaal, godslastering, expliciete naaktheid, majesteitsschennis). 
 			De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
 			<br>
-			This text contains language that can be perceived as extreme.";
+			This text contains language that can be perceived as extreme.";*/
 		}
 		else{
 			return $args;

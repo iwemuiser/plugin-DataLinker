@@ -2,9 +2,9 @@ function scrollToPosition(){
     jQuery(document).ready(function(){
     	// 'catTopPosition' is the amount of pixels #cat
     	// is from the top of the document
-    	var catTopPosition = jQuery('#volksverhaal-item-type-metadata-text').offset().top;
     	// When #scroll is clicked
     	jQuery('#text-scroll').click(function(){
+        	var catTopPosition = jQuery('[id$=item-type-metadata-text]').offset().top;
     		// Scroll down to 'catTopPosition'
     		jQuery('html, body').animate({scrollTop:catTopPosition - 50}, 'slow');
     		// Stop the link from acting like a normal anchor link
@@ -12,6 +12,7 @@ function scrollToPosition(){
     	});
     });
 }
+
 
 function toggleSlides(){
     jQuery('.toggler').click(function(e){
@@ -27,18 +28,39 @@ function toggleSlides(){
     });
     
     jQuery('#slidetoggle.down').click(function(e){
-        jQuery('.slider').slideUp(20);
+        jQuery('.slider').slideUp(200);
         jQuery(this).hide();
         jQuery('#slidetoggle.up').show();
     });
     
     jQuery('#slidetoggle.up').click(function(e){
-        jQuery('.slider').slideDown(20);
+        jQuery('.slider').slideDown(200);
         jQuery(this).hide();
         jQuery('#slidetoggle.down').show();
     });
 };
+
+function infoMenu(){
+    jQuery(document).ready(function () {
+        jQuery(".hoverli").hover(function () {
+            jQuery('ul.file_menu').slideDown('fast');
+        },
+        function () {
+            jQuery('ul.file_menu').slideUp('fast');
+        }
+    );
+        jQuery(".file_menu li").hover(function () {
+            jQuery(this).children("ul").slideDown('fast');
+        },
+        function () {
+            jQuery(this).children("ul").slideUp('fast');
+        }
+    );
+    });
+};
+
 jQuery(function(){
     toggleSlides();
+    infoMenu();
     scrollToPosition();
 });

@@ -1,8 +1,37 @@
 <?php
+
 /* 
 * Example: get_element_id_by_value("TM 2001", "Subject")
 */
-function get_element_by_value($search_string, $element_name){
+function get_element_by_value($search_string, $element_name, $collection_id = NULL){
+	$db = get_db();
+	$sql = "
+	SELECT items.id 
+	FROM {$db->Item} items 
+	JOIN {$db->ElementText} element_texts 
+	ON items.id = element_texts.record_id 
+	JOIN {$db->Element} elements 
+	ON element_texts.element_id = elements.id 
+	JOIN {$db->ElementSet} element_sets 
+	ON elements.element_set_id = element_sets.id 
+	AND elements.name = '" . $element_name . "'
+	AND element_texts.text = ? ";
+	if ($collection_id) {
+	    $sql .= "AND items.collection_id = '" . $collection_id . "'";
+    };
+	$itemIds = $db->fetchAll($sql, $search_string);
+	if (count($itemIds) >= 1){
+        $found_item = get_record_by_id('item', $itemIds[0]["id"]);
+        return $found_item;
+#        return $found_item->id; #return just the id
+	}
+	return null;
+}
+
+/* 
+* Example: get_element_id_by_value("TM 2001", "Subject")
+*/
+function get_element_by_valueOLD($search_string, $element_name){
 	$db = get_db();
 	$sql = "
 	SELECT items.id 
