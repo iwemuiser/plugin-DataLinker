@@ -80,9 +80,9 @@ function double_field_info($subject_element_number, $search_element = null, $ret
     }
     $links[] = info_search_link($subject_element_number, $original_value, $collection);
     $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");         // check if the link to the item can be found
-    $links[] = info_item_link("Subject", $original_value, 2, "in lexicon");      //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");     //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");        //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 2, "in lexicon");         //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Lexicon
     if (is_admin_theme()) {
         $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
     }
@@ -97,7 +97,7 @@ function browse_link_in_menu($original_value, $additional_information, $links){
     $html = $original_value;
     $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
     if ($supplemented_value){
-        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value);
+        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value); //for unique id name
         $html = '
         <div id="button">
             <ul class="hover">
@@ -134,20 +134,19 @@ function browse_link_in_toggler($original_value, $additional_information, $links
 }
 
 function browse_link_in_table($original_value, $additional_information, $links){
-    $html = 
-        '<table>
-            <tr><td>'. $original_value . '</td>
-            <td>';
-    foreach ($links as $link){ $html .= $link;}
-    $html .= '</td>';
-    
+    $html = $original_value . '<table>';
     if ($additional_information){
-        $html .= '    <tr>
-                <th colspan="2">' . 
+        $html .= 
+        '    <tr>
+                <th>' . 
                     $additional_information . '<br />
                 </th>
             </tr>';
     }
+        $html .= '<tr>
+            <td>';
+    foreach ($links as $link){ $html .= $link;}
+    $html .= '</td></tr>';
         $html .= '</table>';
     return $html;
 }

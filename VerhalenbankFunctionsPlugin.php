@@ -28,6 +28,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 	protected $_filters = array('display_elements',
 	                            'file_markup',
 	                            'item_citation',
+	                            'public_navigation_admin_bar',
 #                                'admin_navigation_main',
 #                                'public_navigation_main'
                                 );
@@ -86,6 +87,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      * Initialize the plugin.
      */
     public function hookInitialize(){
+        add_translation_source(dirname(__FILE__) . '/languages');
     }
 
 	/**
@@ -160,8 +162,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
     public function hookPublicItemsShowSidebarUltimateTop($args){
         print "<ul class='slide-toggle'>";
-        print '<li class="up" id="slidetoggle">'.__("Informatie uitklappen").'</li>';
-        print '<li class="down" id="slidetoggle" style="display:none;">'.__("Informatie inklappen").'</li>';
+        print '<li class="up" id="slidetoggle">'.__("Show browse links").'</li>'; #TRANSLATE Informatie uitklappen
+        print '<li class="down" id="slidetoggle" style="display:none;">'.__("Hide browse links").'</li>';
         print "</ul>";
         
     }
@@ -242,6 +244,52 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
     public function filterPublicNavigationMain($args){
         #ONLY FOR NAVIGATION
+    }
+    
+    public function filterPublicNavigationAdminBar($navLinks)
+    {
+        $view = get_view();
+        if(isset($view->item)) {
+            $record = $view->item;
+            $aclRecord = $view->item;
+        }
+
+        if(isset($view->collection)) {
+            $record = $view->collection;
+            $aclRecord = $view->collection;
+        }
+
+        if(isset($view->simple_pages_page)) {
+            $record = $view->simple_pages_page;
+            $aclRecord = 'SimplePages_Page';
+        }
+
+        if(isset($view->exhibit_page)) {
+            $record = $view->exhibit_page;
+            $aclRecord = $view->exhibit;
+        }                
+
+        if(!isset($record)) {
+            return $navLinks;
+        }
+
+        if(is_allowed($aclRecord, 'edit')) {
+#            set_theme_base_url('admin');
+            if(get_class($record) == 'ExhibitPage') {
+                $url = admin_url('exhibits/edit-page-content/' . $record->id);
+            } else {
+                $url = url('admin/items/edit/' . $record->id);
+            }
+#            print "<pre>" . url('admin/items/edit/' . $record->id) . "</pre>";
+            //want to place it first in the navigation, so do an array merge
+            $editLinks['Edit Link'] = array(
+                    'label'=>'Edit',
+                    'uri'=> $url
+                    );
+            revert_theme_base_url();
+        }
+        $navLinks = array_merge($editLinks, $navLinks);
+        return $navLinks;
     }
 }
 

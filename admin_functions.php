@@ -16,11 +16,11 @@ function table_double_field_info($args){
                                     "advanced[0][type]" => "is exactly",
                                     "advanced[0][terms]" => "$args"));
         $tale_view_url = get_element_by_value($args, "Identifier") ? record_url(get_element_by_value($args, "Identifier"), 'show') : "";
-        $type_information = "Temporarily no title information"; ## REPLACE BY THIS:  $type_information = get_type_description($args);
+        $type_information = __("Temporarily no title information"); ## REPLACE BY THIS:  $type_information = get_type_description($args);
         $pasted_args = str_replace(array(" ", "\r"), "", $args);
         return browse_link_in_table($value, $search_url, $additional_information);
    }
-   return "something went wrong";
+   return __("something went wrong");
 }
 
 
