@@ -287,8 +287,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                     'uri'=> $url
                     );
             revert_theme_base_url();
+            $navLinks = array_merge($editLinks, $navLinks);
         }
-        $navLinks = array_merge($editLinks, $navLinks);
         return $navLinks;
     }
 }
