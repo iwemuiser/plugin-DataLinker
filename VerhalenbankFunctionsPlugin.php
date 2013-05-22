@@ -139,7 +139,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         }
         return $elementSets;
     }
-
+    
     public function hookPublicItemsShowSidebarTop($args){
         $_metadata_fields_public_hide = array_merge($this->_metadata_public_hide["Dublin Core"], $this->_metadata_public_hide["Item Type Metadata"]);
         $item = $args['item'];
@@ -147,11 +147,13 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         print '<h2>Metadata</h2>';
         foreach($this->_metadata_to_the_right as $setName=>$elements) {
             foreach($elements as $element) {
-                if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publicly AND if a user is logged in
-                    if (strlen(metadata('item', array($setName, $element))) > 0){ // don't show when empty
+                if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publically AND if a user is logged in
+                    if (metadata('item', array($setName, $element), array('all' => true)) > 0){ // don't show when empty
                         print '<div id="" class="element">';
                         print "<h3>" . __($element) . " </h3>";
-                        print '<div class="element-text">' . metadata('item', array($setName, $element)) . "</div>";
+                        foreach(metadata('item', array($setName, $element), array('all' => true)) as $key => $value){
+                            print '<div class="element-text">' . $value . "</div>";
+                        }
                         print '</div>';
                     }
                 }
@@ -198,6 +200,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
         queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
         queue_js_file('showHide');
+        queue_js_file('search_mod');
         $view = get_view();
         if(isset($view->item)) {
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){

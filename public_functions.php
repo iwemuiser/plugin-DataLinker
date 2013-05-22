@@ -26,17 +26,24 @@ function subgenre_info_retrieve_popup_jquery($args){
 }
 
 function subject_info_retrieve_popup_jquery($args){
-    $subject_element_number = 49; #Subject
-    $search_element = "Identifier";
-    $return_element = "Title";
-    $collection = 1;
+    $subject_element_number = 49;           #Subject  
+    $search_element = "Identifier";         #Here, the value of the metadata is looked up in identifier
+    $return_element = "Title";              #The title of the found Item is returned in the HTML code
+    $collection = 1;                        #collection 1 is used to link to
     return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
+/*
+*   returns html code for aditional link information on the public or admin site
+*   @arguments:
+*   
+* @param Object $args       The Item object
+* @return string            html code
+*
+* More settings: 
+*/
 function creator_info_retrieve_popup_jquery($args){
-    $subject_element_number = 39; #Creator
-#    $search_element = "Title";
-#    $return_element = "Title";
+    $subject_element_number = 39; #Creator / verteller
     $search_element = null;
     $return_element = null;
     $collection = 1;
@@ -83,6 +90,7 @@ function double_field_info($subject_element_number, $search_element = null, $ret
     $links[] = info_item_link("Subject", $original_value, 2, "in lexicon");         //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Title", $original_value, 4, "in Vertellers");           //check if the value can be found in subcollection Lexicon
     if (is_admin_theme()) {
         $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
     }
