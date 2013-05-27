@@ -23,12 +23,15 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                 'admin_head',
 #	                            'admin_items_show',
                                 'admin_items_show_sidebar',
-                                'initialize');
+                                'initialize',
+                                'items_browse_sql');
 	
 	protected $_filters = array('display_elements',
 	                            'file_markup',
 	                            'item_citation',
 	                            'public_navigation_admin_bar',
+                                'admin_dashboard_panels',
+                                'admin_dashboard_stats',
 #                                'admin_navigation_main',
 #                                'public_navigation_main'
                                 );
@@ -104,6 +107,44 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         return $citation;
     }
 
+    public function hookItemsBrowseSql($args){
+        if(isset($args['params']['keywordsearch'])) {
+            $terms = $args['params']['keywordsearch'];
+            $db = $this->_db;
+            $select = $args['select'];
+            $advancedIndex = 0;
+            foreach ($terms as $v) {
+                // Do not search on blank rows.
+                if (empty($v['element_id']) || empty($v['terms'])) {
+                    continue;
+                }
+                $value = $v['terms'];
+                $elementId = (int) $v['element_id'];
+
+                $inner = true;
+                // Determine what the WHERE clause should look like.
+                $alias = "_keywordsearch_{$advancedIndex}";
+
+                // Note that $elementId was earlier forced to int, so manual quoting
+                // is unnecessary here
+                $joinCondition = "{$alias}.record_id = items.id AND {$alias}.record_type = 'Item' AND {$alias}.element_id = $elementId";
+                if ($inner) {
+                    $select->joinInner(array($alias => $db->ElementText), $joinCondition, array());
+                } else {
+                    $select->joinLeft(array($alias => $db->ElementText), $joinCondition, array());
+                }
+                $terms = preg_split("/[\s]*[ ,\.][\s]*/", $value);
+#                print "<pre>" . $terms . " - " . $value . "</pre>";
+                foreach ($terms as $value) {
+                    $predicate = "LIKE " . $db->quote('%'.$value .'%');
+                    $select->where("{$alias}.text {$predicate}");
+                }
+                $advancedIndex++;
+            }
+#            print $select;
+        }
+    }
+
     /**
     *   filterDisplayElements:
     *   Here we filter the elements based on the variables $_metadata_public_hide and $_metadata_to_the_right
@@ -143,23 +184,27 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     public function hookPublicItemsShowSidebarTop($args){
         $_metadata_fields_public_hide = array_merge($this->_metadata_public_hide["Dublin Core"], $this->_metadata_public_hide["Item Type Metadata"]);
         $item = $args['item'];
-        print '<div id="item-metadata" class="element">';
-        print '<h2>Metadata</h2>';
+        $html = "";
         foreach($this->_metadata_to_the_right as $setName=>$elements) {
             foreach($elements as $element) {
                 if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publically AND if a user is logged in
-                    if (metadata('item', array($setName, $element), array('all' => true)) > 0){ // don't show when empty
-                        print '<div id="" class="element">';
-                        print "<h3>" . __($element) . " </h3>";
+                    if (metadata('item', array($setName, $element), array('all' => true))){ // don't show when empty
+                        $html .= '<div id="" class="element">';
+                        $html .= "<h3>" . __($element) . " </h3>";
                         foreach(metadata('item', array($setName, $element), array('all' => true)) as $key => $value){
-                            print '<div class="element-text">' . $value . "</div>";
+                            $html .= '<div class="element-text">' . $value . "</div>";
                         }
-                        print '</div>';
+                        $html .= '</div>';
                     }
                 }
             }
         }
-        print "</div>";
+        if ($html){
+            print '<div id="item-metadata" class="element">';
+            print '<h2>Metadata</h2>';
+            print $html;
+            print "</div>";
+        }
     }
 
     public function hookPublicItemsShowSidebarUltimateTop($args){
@@ -204,8 +249,9 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $view = get_view();
         if(isset($view->item)) {
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
             }
+            #TODO: aangeven wanneer dit moet gebeuren zoals hierboven
             add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
@@ -293,6 +339,231 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             $navLinks = array_merge($editLinks, $navLinks);
         }
         return $navLinks;
+    }
+    
+    
+    /**
+     * Appends some more stats to the dashboard
+     * 
+     * @return void
+     **/
+    function filterAdminDashboardStats($stats)
+    {   
+    	$vvcollection = get_record_by_id('Collection', 1);
+    	$stats[] = array(link_to($vvcollection, null, metadata($vvcollection, 'total_items')), __('Volksverhalen'));
+    	$pcollection = get_record_by_id('Collection', 4);
+    	$stats[] = array(link_to($pcollection, null, metadata($pcollection, 'total_items')), __('Vertellers'));
+    	$tpcollection = get_record_by_id('Collection', 3);
+    	$stats[] = array(link_to($tpcollection, null, metadata($tpcollection, 'total_items')), __('Verhaaltypen'));
+        return $stats;
+    }
+
+    function print_pre($whatever){
+    	print "<pre>";
+    	print_r($whatever);
+    	print "</pre>";
+    }
+
+
+    /**
+     * Append search to dashboard
+     * 
+     * @return void
+     **/
+    function filterAdminDashboardPanels($panels){
+        $panels2[] = $this->_addDashboardBrowseEtc($panels);
+        $panels2[] = $this->_addDashboardSearchEtc($panels);
+        $panels2[] = $this->_pimped_recent_items();
+#        $panels2[] = $this->_active_users();
+        return $panels2;
+    }
+    
+
+    function _pimped_recent_items(){
+        $recent_html = '<h2>' . __('Recent Items') . '</h2>';
+        set_loop_records('items', get_recent_items(5));
+            foreach (loop('items') as $item){
+                $recent_html .= '<div class="recent-row">';
+                $recent_html .= '<p class="recent">' . metadata($item, array('Dublin Core', 'Identifier')) . ' - '. link_to_item() . '</p>';
+                $recent_html .= '<p class="recent">' . (metadata($item, 'item_type_name') ? metadata($item, 'item_type_name') : "NO ITEMTYPE!") . 
+                                " in " . (metadata($item, 'collection_name') ? metadata($item, 'collection_name') : "NO COLLECTION !") . '</p>';
+                if (is_allowed($item, 'edit')){
+                    $recent_html .= '<p class="dash-edit">' . link_to_item(__('Edit'), array(), 'edit') . '</p>';
+                }
+                $recent_html .= '</div>';
+            }
+        return $recent_html;
+    }
+        
+    function _addDashboardSearchEtc($panels){
+#        $db = get_db();
+
+        $zoeken_html = "<H1>Snelzoeken</H1><br>";
+
+        $zoeken_html .= '<H2>Zoek in Volksverhalen</H2>';
+
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Zoek in tekst</label><br>';
+        $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="1">';
+        $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="1" >';
+        $zoeken_html .= '<input type="text" name="keywordsearch[0][terms]" id="keywordsearch[0][terms]" value="" size="30">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Zoek in tags</label><br>';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][element_id]" id="advanced[0][element_id]" value="">';
+        $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="1" >';
+        $zoeken_html .= '<input type="text" name="tags" id="tags" value="" size="30">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+        /*zoeken in velden 63 65 66 (exclusive)*/
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Zoek in named entities</label><br>';
+        $zoeken_html .= '<select name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" style="width: 140px">
+                            <option value="63">Generiek (oud)</option>
+                            <option value="66">Namen</option>
+                            <option value="65">Plaatsen</option>
+                        </select>';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][element_id]" id="advanced[0][element_id]" value="63">';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains">';
+        $zoeken_html .= '<input type="text" name="keywordsearch[0][terms]" id="keywordsearch[0][terms]" value="" size="10">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+        $zoeken_html .= '<H2>Zoek in Verhaaltypen</H2>';
+
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Beschrijving</label><br>';
+        $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="41" >';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
+        $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="3" >';
+        $zoeken_html .= '<input type="text" name="keywordsearch[0][terms]" id="keywordsearch[0][terms]" value="" size="30">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Verhaaltypenummer (Aanduiding)</label>';
+        $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="43" >';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
+        $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="3" >';
+        $zoeken_html .= '<input type="text" name="keywordsearch[0][terms]" id="keywordsearch[0][terms]" value="" size="30">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+        $zoeken_html .= '<H2>Zoek in Vertellers</H2>';
+
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<label>Op naam</label><br>';
+        $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="50" >';
+#        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
+        $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="4" >';
+        $zoeken_html .= '<input type="text" name="keywordsearch[0][terms]" id="keywordsearch[0][terms]" value="" size="30">';
+        $zoeken_html .= '<input type="submit" class="submit small green button" name="submit_search" id="submit_search_advanced" value="';
+        $zoeken_html .= __('search') . '">';
+        $zoeken_html .= "</form>";
+
+    	return $zoeken_html;
+    }
+
+    function _verhaaltype_lijst($maker){
+        return url(array('module'=>'items','controller'=>'browse'), 
+                                'default',
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => "3",
+                                    "advanced[0][element_id]" => "39",
+                                    "advanced[0][type]" => "is exactly",
+                                    "advanced[0][terms]" => $maker,
+                                    )
+                                );
+    }
+
+    function _addDashboardBrowseEtc($panels){
+        $all_tales_browse = url(array('module'=>'items','controller'=>'browse'), 
+                                'default',
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => "1",
+                                    )
+                                );
+        $private_tales_browse = url(array('module'=>'items','controller'=>'browse'), 
+                                'default',
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => "1",
+                                    "public" => "0",
+                                    )
+                                );
+        $public_tales_browse = url(array('module'=>'items','controller'=>'browse'), 
+                                'default',
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => "1",
+                                    "public" => "1",
+                                    )
+                                );
+        $own_tales_browse = url(array('module'=>'items','controller'=>'browse'), 
+                                'default',
+                                array("search" => "",
+                                    "submit_search" => "Zoeken",
+                                    "collection" => "1",
+                                    "user" => current_user()->id
+                                    )
+                                );
+        $item_toevoegen = 
+        $folktale_html = "";
+        $folktale_html .= "<H1>Volksverhalenbank functies</H1><br>";
+        $folktale_html .= "<a class='small blue advanced-search-link button' href='/vb/admin/items/search'>Geavanceerd zoeken</a>";
+        $folktale_html .= "<a href='/vb/admin/items/add' class='add button small green'>Voeg een item toe</a><br>";
+
+        $folktale_html .= "<H2>Invoerhulp websites / lijsten</H2><br>";
+        $folktale_html .= '<UL STYLE="list-style-type: disc;">';
+        $folktale_html .= "<li><a target='manual' href='http://bookstore.ewi.utwente.nl/docs/Handleiding%20Nieuwe%20Volksverhalenbank%20Versie%202.pdf'><b>Handleiding</b> invoer Nederlandse Volksverhalenbank</a><br>";
+        $folktale_html .= "<li><a target='motieven' href='http://www.dinor.demon.nl/Thompson/'>Browse/zoek <b>Thompson movieven</b> (website Dirk Kramer)</a><br>";
+        $folktale_html .= "<li><a target='kloekenummers' href='http://www.meertens.knaw.nl/kloeke/'>Zoek <b>Kloeke nummers</b> (website Meertens)</a><br>";
+        $folktale_html .= "</UL><br>";
+
+        $folktale_html .= "<H2>Volksverhalen lijsten</H2><br>";
+        $folktale_html .= '<UL STYLE="list-style-type: disc;">';
+        $folktale_html .= "<li><a href = '$all_tales_browse'>Browse <b>alle</b> volksverhalen</a><br>";
+        $folktale_html .= "<li><a href = '$private_tales_browse'>Browse <b>prive</b> volksverhalen</a><br>";
+        $folktale_html .= "<li><a href = '$public_tales_browse'>Browse <b>publieke</b> volksverhalen</a><br>";
+        $folktale_html .= "<li><a href = '$own_tales_browse'>Browse <b>zelf toegevoegde</b> volksverhalen</a><br>";
+        $folktale_html .= "</ul><br>";
+
+        $folktale_html .= "<H2>Volksverhaaltype lijsten</H2><br>";
+        $folktale_html .= '<UL STYLE="list-style-type: disc;">';
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("Theo Meder")."'>Browse <b>Theo Meder</b> Verhaaltypen</a><br>";
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("ATU")."'>Browse <b>ATU</b> Verhaaltypen</a><br>";
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("Aarne Thompson")."'>Browse <b>Aarne Thompson</b> Verhaaltypen</a><br>";
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("Brunvand")."'>Browse <b>Brunvand</b> Verhaaltypen</a><br>";
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("Sinninghe")."'>Browse <b>Sinninghe</b> Verhaaltypen</a><br>";
+        $folktale_html .= "<li><a href = '".$this->_verhaaltype_lijst("Van der Kooi")."'>Browse <b>Van der Kooi</b> Verhaaltypen</a><br>";
+        $folktale_html .= "</UL><br>";
+
+        return $folktale_html;
+    }
+
+    function _count_items($collection = null)
+    {
+        if($collection) {
+    		if(is_numeric($collection)) {
+    		    $collectionId = $collection;
+    		} else {
+    		    $collectionId = $collection->id;
+    		}
+    		$count = get_db()->getTable('Item')->count(array('collection'=>$collectionId));
+    	    } else {
+    	        $count = get_db()->getTable('Item')->count();
+        	}
+        return $count;
     }
 }
 

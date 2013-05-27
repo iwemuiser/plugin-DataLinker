@@ -87,10 +87,10 @@ function double_field_info($subject_element_number, $search_element = null, $ret
     }
     $links[] = info_search_link($subject_element_number, $original_value, $collection);
     $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");         // check if the link to the item can be found
-    $links[] = info_item_link("Subject", $original_value, 2, "in lexicon");         //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 2, "in Lexicon");         //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Title", $original_value, 4, "in Vertellers");           //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Title", $original_value, 4,   "in Vertellers");           //check if the value can be found in subcollection Lexicon
     if (is_admin_theme()) {
         $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
     }
@@ -217,29 +217,24 @@ function info_search_link($element_number, $search_term, $collection = 1){
                                 "advanced[0][element_id]" => "$element_number",
                                 "advanced[0][type]" => "is exactly",
                                 "advanced[0][terms]" => "$search_term"));
-    return "<a href='".$taletype_search_url."'>Alles met " . __($element_name) . ": " . $search_term . "</a><br>";
+    return "<a href='".$taletype_search_url."'>" . $search_term . ": alle verhalen</a><br>";
 }
 
 function text_copyright_hide($args){
-	if ($user = current_user()){
-		return $args;
-	}
-	if ($args){
-		if (metadata(get_current_record('item'), array('Dublin Core', 'Rights')) == "nee"){
+    if ($user = current_user()){
+        return $args;
+    }
+    if ($args){
+        if (metadata(get_current_record('item'), array('Dublin Core', 'Rights')) == "nee"){
             return get_option('textcopyrightwarning');
-			/*"<p textcolor = 'red'><b>Auteursrecht:</b></p>
-			De tekst bevat auteursrechtelijk beschermde informatie. 
-			De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
-			<br>
-			This text contains copyrighted information.";*/
-		}
-		else{
-			return $args;
-		}
-	}
-	else{
-		return false;
-	}
+        }
+        else{
+            return $args;
+        }
+    }
+    else{
+        return false;
+    }
 }
 
 
@@ -250,11 +245,6 @@ function text_extreme_hide($args){
 	if ($args){
 		if (metadata(get_current_record('item'), array('Item Type Metadata', 'Extreme')) == "ja"){
 			return get_option('textextremewarning');
-/*			"<p textcolor = 'red'><b>Extreme:</b></p> 
-			Dit record bevat extreme elementen van enigerlei aard (racisme, sexisme, schuttingtaal, godslastering, expliciete naaktheid, majesteitsschennis). 
-			De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut.
-			<br>
-			This text contains language that can be perceived as extreme.";*/
 		}
 		else{
 			return $args;
