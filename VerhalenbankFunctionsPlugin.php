@@ -24,7 +24,8 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 #	                            'admin_items_show',
                                 'admin_items_show_sidebar',
                                 'initialize',
-                                'items_browse_sql');
+                                'items_browse_sql',
+                                'define_acl',);
 	
 	protected $_filters = array('display_elements',
 	                            'file_markup',
@@ -91,6 +92,31 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      */
     public function hookInitialize(){
         add_translation_source(dirname(__FILE__) . '/languages');
+    }
+
+    /**
+     * Define the ACL.
+     * Here some new user rights are set
+     *
+     * @param Omeka_Acl
+     */
+    public function hookDefineAcl($args)
+    {
+        $acl = $args['acl'];
+        $indexResource = new Zend_Acl_Resource('FolktaleAnnotator_Index');
+        $acl->add($indexResource);
+
+        $acl->allow("contributor", "Items", array('makePublic', "edit"));
+
+        $acl->deny("admin", "Collections", 'delete');
+
+        $acl->allow("admin", array("Users"));
+
+#        $acl->allow(array('super', 'admin', 'contributor'), array('FolktaleAnnotator_Index'));
+#        $pageResource = new Zend_Acl_Resource('FolktaleAnnotator_Page');
+#        $acl->add($pageResource);
+#        $acl->allow(array('super', 'admin'), 'FolktaleAnnotator_Page', array('add', 'annotate'));
+#        $acl->allow('guest', 'Contribution_Contribution', array('show', 'contribute', 'thankyou', 'my-contributions'));        
     }
 
 	/**
