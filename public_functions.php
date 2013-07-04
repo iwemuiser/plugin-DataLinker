@@ -1,5 +1,37 @@
 <?php
 
+function nep_info_retrieve_popup_jquery($args){
+    $subject_element_number = 93; //Named entity place zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
+function nea_info_retrieve_popup_jquery($args){
+    $subject_element_number = 66; //Named entity actor zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
+function ne_other_info_retrieve_popup_jquery($args){
+    $subject_element_number = 63; //Named entity zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
+function title_person_info_retrieve_popup_jquery($args){
+    $subject_element_number = 39; //Maker zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
 function identifier_info_retrieve_popup_jquery($args){
     $subject_element_number = 49; //subject zoeken
     $search_element = null;
@@ -69,7 +101,8 @@ function collector_info_retrieve_popup_jquery($args){
 }
 
 function present_dates_as_language($args){
-    return $args;
+    $printable = new DateFormatHuman($args);
+    return $printable->formatHuman();
 }
 
 function double_field_info($subject_element_number, $search_element = null, $return_element = null, $collection = null, $original_value = null, $return_itemset = 'Dublin Core'){

@@ -23,6 +23,10 @@ function table_double_field_info($args){
    return __("something went wrong");
 }
 
+function present_dates_as_language_admin($args){
+    $printable = new DateFormatHuman($args);
+    return $printable->formatHuman() . " (" . $args . ")";
+}
 
 /**
 * contributor_information_tab_admin

@@ -9,7 +9,7 @@ if (!defined('VERHALENBANKFUNCTIONS_IMAGE_DIR')) {
 require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/ElementFunctions.php';
 require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/admin_functions.php';
 require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/public_functions.php';
-
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/DateConversions.php';
 
 class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 {
@@ -33,6 +33,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 	                            'public_navigation_admin_bar',
                                 'admin_dashboard_panels',
                                 'admin_dashboard_stats',
+                                'public_navigation_items'
 #                                'admin_navigation_main',
 #                                'public_navigation_main'
                                 );
@@ -43,6 +44,26 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     public $_metadata_to_the_right = array("Dublin Core" => array("Creator", "Contributor", "Type", "Language"),
                                             "Item Type Metadata" => array("Collector"));
 
+
+    /**
+     * Return HTML props
+     * 
+     * @return string
+     */
+    public function link_to_search_arguments($advanced_style){
+        $uri = "items/search?style=$advanced_style";
+        $props = $uri . (!empty($_SERVER['QUERY_STRING']) ? '&' . $_SERVER['QUERY_STRING'] : '');
+        return $props;
+    }
+
+    public function filterPublicNavigationItems($navArray){
+        unset($navArray[0]); #unsetting browse all items
+        unset($navArray[2]); #unsetting start search from scratch
+        $navArray['blorptest'] = array('label'=>__('Modify search'),
+                                       'uri' => url($this->link_to_search_arguments("advanced"))
+                                       );
+        return $navArray;
+    }
 
     public function hookConfigForm()
     {
@@ -134,6 +155,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     }
 
     public function hookItemsBrowseSql($args){
+        _log("ALSO THE BASIC SEARCH CAN BE EXTENDED HERE", $priority = Zend_Log::DEBUG);
         if(isset($args['params']['keywordsearch'])) {
             $terms = $args['params']['keywordsearch'];
             $db = $this->_db;
@@ -151,8 +173,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 // Determine what the WHERE clause should look like.
                 $alias = "_keywordsearch_{$advancedIndex}";
 
-                // Note that $elementId was earlier forced to int, so manual quoting
-                // is unnecessary here
+                // Note that $elementId was earlier forced to int, so manual quoting unnecessary here
                 $joinCondition = "{$alias}.record_id = items.id AND {$alias}.record_type = 'Item' AND {$alias}.element_id = $elementId";
                 if ($inner) {
                     $select->joinInner(array($alias => $db->ElementText), $joinCondition, array());
@@ -167,7 +188,6 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 }
                 $advancedIndex++;
             }
-#            print $select;
         }
     }
 
@@ -175,7 +195,6 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     *   filterDisplayElements:
     *   Here we filter the elements based on the variables $_metadata_public_hide and $_metadata_to_the_right
     *   
-    *               To do: NOT IN ADMIN MODE
     **/
     public function filterDisplayElements($elementSets) {
         if (!is_admin_theme()) { #only in the public view!
@@ -274,6 +293,9 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         queue_js_file('search_mod');
         $view = get_view();
         if(isset($view->item)) {
+            if (metadata("item", 'Item Type Name') == "Persoon"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
+            }
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
             }
@@ -284,6 +306,9 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
 
             add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
@@ -298,8 +323,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     {
         $view = get_view();
         if(isset($view->item)) {
+            if (metadata("item", 'Item Type Name') == "Persoon"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
+            }
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
             }
             add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
@@ -307,13 +335,17 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
-
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
+            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
+            
+            
             add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
             add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
             add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
         }
     }
 
