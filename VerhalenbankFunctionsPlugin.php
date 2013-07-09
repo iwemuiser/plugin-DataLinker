@@ -113,6 +113,9 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      */
     public function hookInitialize(){
         add_translation_source(dirname(__FILE__) . '/languages');
+        // Register the select filter controller plugin.
+		$front = Zend_Controller_Front::getInstance();
+		$front->registerPlugin(new InputFieldFilter);
     }
 
     /**
