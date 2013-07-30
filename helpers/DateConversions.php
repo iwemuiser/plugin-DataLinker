@@ -42,12 +42,12 @@ class DateFormatHuman{
         25 =>   "Eerste kwart",             //25 jaar
         50 =>   "Tweede kwart",
         75 =>   "Derde kwart",
-        00 =>   "Vierde kwart");
+        0 =>   "Vierde kwart");
 
     public $century_positions = array(
         20 =>   "begin",                    //20 jaar
         60 =>   "midden",
-        00 =>   "eind");
+        0 =>   "eind");
         
     public $century_approx    =  50;                              //50 jaar
     
@@ -107,9 +107,9 @@ class DateFormatHuman{
             $century = floor($this->date_start->format('Y')/100);
             return $this->century_quarters[$this->date_end->format('Y') - $century * 100] . " " . ($century+1) . "e eeuw";
         }
-        else if ($this->is_positionin_century($this->date_start, $this->date_end)){ //quarter century
+        else if ($this->is_positionin_century($this->date_start, $this->date_end)){ //part of century
             $century = floor($this->date_start->format('Y')/100);
-            return $this->century_positions[$this->date_end->format('Y') - $century * 100] . " " . ($century+1) . "e eeuw";
+            return $this->century_positions[$this->date_end->format('Y') - (($century + 1) * 100)] . " " . ($century+1) . "e eeuw";
         }
         else if ($this->is_year($this->date_start, $this->date_end)){ //a year
             return $this->date_end->format('Y');

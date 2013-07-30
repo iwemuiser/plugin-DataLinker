@@ -1,4 +1,6 @@
 <?php
+
+
 function type_info_retrieve_table($args){
     $subject_element_number = 51; #Type
     $search_element = null;
@@ -6,6 +8,7 @@ function type_info_retrieve_table($args){
     $collection = 1;
     return table_double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
+
 
 function table_double_field_info($args){
     if ($args){

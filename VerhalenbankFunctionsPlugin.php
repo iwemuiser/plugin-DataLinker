@@ -38,7 +38,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 #                                'public_navigation_main'
                                 );
 
-    public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights", "Creator"), #CREATOR TEMPORARY
+    public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights"),//, "Creator"), #CREATOR TEMPORARY -> check Creator(39): privacy(89)
                                             "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date"));
     
     public $_metadata_to_the_right = array("Dublin Core" => array("Creator", "Contributor", "Type", "Language"),
@@ -76,6 +76,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
         $post = $args['post'];
         set_option('textcopyrightwarning', $post['textcopyrightwarning']);
         set_option('textextremewarning', $post['textextremewarning']);
+        set_option('creatorprivatewarning', $post['creatorprivatewarning']);
         set_option('imagewarning', $post['imagewarning']);
         set_option('kloekelink', $post['kloekelink']);
         set_option('subcollectionswithtypes', $post['subcollectionswithtypes']);
@@ -84,6 +85,10 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     }
     
     public function hookInstall(){
+        set_option('creatorprivatewarning', 
+            "<p style = 'color:red'><b>Vertellers privacy:</b></p> 
+Deze verteller wil vanwege privacy redenen niet worden weergegeven.<br>
+This narrator wishes to remain anonimous.");
         set_option('textcopyrightwarning', 
             "<p style = 'color:red'><b>Auteursrecht:</b></p> 
 De tekst bevat auteursrechtelijk beschermde informatie. 
@@ -297,29 +302,91 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $view = get_view();
         if(isset($view->item)) {
             if (metadata("item", 'Item Type Name') == "Persoon"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                        'title_person_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
+            }
+            if (metadata("item", 'Item Type Name') == "Volksverhaal"){
+                if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
+                    add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_privacy_hide', 1);
+                }
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
             }
             #TODO: aangeven wanneer dit moet gebeuren zoals hierboven
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
+            if (metadata("item", 'Item Type Name') == "Volksverhaal" || metadata("item", 'Item Type Name') == "Lexicon item" || metadata("item", 'Item Type Name') == "Text Edition"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
 
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
-        }    
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
+
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5); // should check if there is Text available
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text', 6);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
+            }
+        }
+    }
+
+
+    /*  Super specific code for checking the "Privacy Required" value of a person 
+    * without going through the official permission system.
+    *
+    * Example: get_elements_private_status_by_value("Muiser, Iwe")
+    * @Returns boolean
+    */
+    private function get_elements_private_status_by_value($search_string, $element_name = "Title", $collection_id = 4){
+        $db = get_db();
+    	$config = $db->getAdapter()->getConfig();
+        $db_hack = new Zend_Db_Adapter_Pdo_Mysql(array( //call database for checking
+        	'host'     => $config["host"],
+        	'username' => $config["username"],
+        	'password' => $config["password"],
+        	'dbname'   => $config["dbname"]));
+        if (!$db->getConnection()) {
+            return false;
+        }
+        $sql = $this->illegal_sql_generator($search_string, false, $element_name, $collection_id);
+        $stmt = $db_hack->prepare($sql);
+		$stmt->execute();
+		$itemId = $stmt->fetch();
+    	if (array_key_exists("id", $itemId)){
+    	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
+            $stmt = $db_hack->prepare($sql2);
+    		$stmt->execute();
+    		$item = $stmt->fetch();
+	    	if (array_key_exists("text", $item)){
+                if ($item["text"] == "ja"){
+                    return true;
+                }
+            }
+    	}
+    	return false;
+    }
+
+    private function illegal_sql_generator($search_string, $item_id, $element_name, $collection_id){
+        $db = get_db();
+    	$sql = "
+    	SELECT items.id, text
+    	FROM {$db->Item} items 
+    	JOIN {$db->ElementText} element_texts 
+    	ON items.id = element_texts.record_id 
+    	JOIN {$db->Element} elements 
+    	ON element_texts.element_id = elements.id 
+    	JOIN {$db->ElementSet} element_sets 
+    	ON elements.element_set_id = element_sets.id 
+    	AND elements.name = '" . $element_name . "'
+        AND items.collection_id = '" . $collection_id . "'";
+    	if ($search_string) {$sql .= "AND element_texts.text = '" . $search_string . "'"; }
+    	if ($item_id) {$sql .= "AND items.id = '" . $item_id . "'"; }
+    	return $sql;
     }
 
     public function hookAdminHead($args)

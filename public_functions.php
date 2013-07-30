@@ -82,7 +82,6 @@ function creator_info_retrieve_popup_jquery($args){
     return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
-
 function language_info_retrieve_popup_jquery($args){
     $subject_element_number = 44; #Language
     $search_element = null;
@@ -105,6 +104,12 @@ function present_dates_as_language($args){
     return $printable->formatHuman();
 }
 
+
+/*
+*   Returns HTML containing links to connected internal data sources
+*   
+*   it figures out if the same ID is present in the Lexicon, Perrault, Grimm, or Vertellers records.
+*/
 function double_field_info($subject_element_number, $search_element = null, $return_element = null, $collection = null, $original_value = null, $return_itemset = 'Dublin Core'){
 #    print "-" . $subject_element_number . " - ". $search_element . " - ". $return_element . " - ". $collection . " - ". $original_value . " - ". $return_itemset;
     $html = "";
@@ -119,11 +124,11 @@ function double_field_info($subject_element_number, $search_element = null, $ret
         }
     }
     $links[] = info_search_link($subject_element_number, $original_value, $collection);
-    $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");         // check if the link to the item can be found
+    $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");  // check if the link to the item can be found
     $links[] = info_item_link("Subject", $original_value, 2, "in Lexicon");         //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Lexicon
-    $links[] = info_item_link("Title", $original_value, 4,   "in Vertellers");           //check if the value can be found in subcollection Lexicon
+    $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Perrault
+    $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Grimm
+    $links[] = info_item_link("Title", $original_value, 4,   "in Vertellers");      //check if the value can be found in subcollection Vertellers
     if (is_admin_theme()) {
         $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
     }
@@ -138,7 +143,7 @@ function browse_link_in_menu($original_value, $additional_information, $links){
     $html = $original_value;
     $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
     if ($supplemented_value){
-        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value); //for unique id name
+        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", "\.", ":"), "", $original_value); //for unique id name
         $html = '
         <div id="button">
             <ul class="hover">
@@ -160,7 +165,8 @@ function browse_link_in_menu($original_value, $additional_information, $links){
 function browse_link_in_toggler($original_value, $additional_information, $links){
     $html = $original_value;
     $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
-    if ($supplemented_value){
+    
+    if ($supplemented_value && !preg_match('/<.+>/', $original_value)){
         $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value);
         $html = '
             <p class="toggler" id="toggler-' . $pasted_args . '">
@@ -195,12 +201,18 @@ function browse_link_in_table($original_value, $additional_information, $links){
 
 function info_item_link($element_name, $search_term, $collection_id = NULL, $ga_naar_text = ""){
     if (get_element_by_value($search_term, $element_name, $collection_id)){
+        _log("info_item_link: " . $element_name . $search_term . " " . $collection_id . $ga_naar_text, $priority = Zend_Log::DEBUG);
         $url = record_url(get_element_by_value($search_term, $element_name, $collection_id), 'show');
         return '<a href='.$url.'>' . $search_term . ' '  . $ga_naar_text . '</a><br>';
     }
     return "";
 }
 
+
+/*
+*   Returns code for scrolling to the full text of the item
+*
+*/
 function scroll_to_full_text($args){
     $itemtype = "volksverhaal";
     return $args . "<br><b><a id='text-scroll' href='#$itemtype-item-type-metadata-text'>" . __("Bekijk volledige tekst") . "</a></b>";
@@ -253,6 +265,10 @@ function info_search_link($element_number, $search_term, $collection = 1){
     return "<a href='".$taletype_search_url."'>" . $search_term . ": alle verhalen</a><br>";
 }
 
+/*
+*       this returns a warning that the text contains copyrighted information
+*
+*/
 function text_copyright_hide($args){
     if ($user = current_user()){
         return $args;
@@ -270,7 +286,9 @@ function text_copyright_hide($args){
     }
 }
 
-
+/*
+*       this returns a warning that the text might contain extreme elements.
+*/
 function text_extreme_hide($args){
 	if ($user = current_user()){
 		return $args;
@@ -286,5 +304,27 @@ function text_extreme_hide($args){
 	else{
 		return false;
 	}
+}
+
+/*
+*   This returns a warning that the user is private when specified in the user's record.
+*/
+function creator_privacy_hide($args){
+	if ($user = current_user()){
+		return $args;
+	}
+    return get_option('creatorprivatewarning');
+/*	if ($args){
+		if (!get_elements_private_status_by_value($args)){
+			return get_option('creatorprivatewarning');
+		}
+		else{
+			return $args;
+		}
+#		return info_item_link("Title", "", 4,   "in Vertellers");
+	}
+	else{
+		return false;
+	}*/
 }
 ?>

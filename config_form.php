@@ -2,6 +2,7 @@
 <?php
 $textcopyrightwarning                   = get_option('textcopyrightwarning');
 $textextremewarning                     = get_option('textextremewarning');
+$creatorprivatewarning                     = get_option('creatorprivatewarning');
 $imagewarning                           = get_option('imagewarning');
 $kloekelink                             = get_option('kloekelink');
 $subcollectionswithtypes                = get_option('subcollectionswithtypes');
@@ -26,6 +27,16 @@ $view = get_view();
         <?php echo $view->formTextarea('textextremewarning', $textextremewarning, array('rows' => '6', 'cols' => '60', 'class' => 'textinput')); ?>
         <p class="explanation">
             De waarschuwing die gegeven wordt wanneer de text niet online mag komen vanwege extreme inhoud.
+        </p>
+    </div>
+</div>
+
+<div class="field">
+    <?php echo $view->formLabel('creatorprivatewarning', 'Verteller wil naam niet online waarschuwing'); ?>
+    <div class="inputs">
+        <?php echo $view->formTextarea('creatorprivatewarning', $creatorprivatewarning, array('rows' => '6', 'cols' => '60', 'class' => 'textinput')); ?>
+        <p class="explanation">
+            De waarschuwing die gegeven wordt wanneer de verteller niet wil worden weergegeven bij het verhaal.
         </p>
     </div>
 </div>

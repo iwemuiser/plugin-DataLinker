@@ -18,12 +18,12 @@ function get_element_by_value($search_string, $element_name, $collection_id = NU
 	AND element_texts.text = ? ";
 	if ($collection_id) {
 	    $sql .= "AND items.collection_id = '" . $collection_id . "'";
-    };
+    }
 	$itemIds = $db->fetchAll($sql, $search_string);
 	if (count($itemIds) >= 1){
         $found_item = get_record_by_id('item', $itemIds[0]["id"]);
-        return $found_item;
-#        return $found_item->id; #return just the id
+#        _log("get_element_by_value: " . $found_item->id , $priority = Zend_Log::DEBUG);
+        return $found_item; //return $found_item->id; #return just the id
 	}
 	return null;
 }
@@ -47,7 +47,7 @@ function get_element_by_valueOLD($search_string, $element_name){
 	$itemIds = $db->fetchAll($sql, $search_string);
 	if (count($itemIds) >= 1){
         $found_item = get_record_by_id('item', $itemIds[0]["id"]);
-        return $found_item;
+        return $found_item->id;
 #        return $found_item->id; #return just the id
 	}
 	return null;
