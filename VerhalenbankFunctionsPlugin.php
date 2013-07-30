@@ -86,7 +86,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     
     public function hookInstall(){
         set_option('creatorprivatewarning', 
-            "<p style = 'color:red'><b>Verteller privé:</b></p>");
+            "<p style = 'color:red'><b>Verteller privé</b></p>");
             
         set_option('textcopyrightwarning', 
             "<p style = 'color:red'><b>Auteursrecht:</b></p> 
