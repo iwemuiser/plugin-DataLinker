@@ -86,9 +86,8 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     
     public function hookInstall(){
         set_option('creatorprivatewarning', 
-            "<p style = 'color:red'><b>Vertellers privacy:</b></p> 
-Deze verteller wil vanwege privacy redenen niet worden weergegeven.<br>
-This narrator wishes to remain anonimous.");
+            "<p style = 'color:red'><b>Verteller privé:</b></p>");
+            
         set_option('textcopyrightwarning', 
             "<p style = 'color:red'><b>Auteursrecht:</b></p> 
 De tekst bevat auteursrechtelijk beschermde informatie. 
