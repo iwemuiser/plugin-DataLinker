@@ -21,17 +21,18 @@ function get_element_by_value($search_string, $element_name, $collection_id = NU
     }
 	$itemIds = $db->fetchAll($sql, $search_string);
 	if (count($itemIds) >= 1){
-        $found_item = get_record_by_id('item', $itemIds[0]["id"]);
+        $found_item = get_record_by_id('item', $itemIds[0]["id"]); //return the first on in the list
 #        _log("get_element_by_value: " . $found_item->id , $priority = Zend_Log::DEBUG);
         return $found_item; //return $found_item->id; #return just the id
 	}
 	return null;
 }
 
+
 /* 
 * Example: get_element_id_by_value("TM 2001", "Subject")
 */
-function get_element_by_valueOLD($search_string, $element_name){
+function get_list_elements_by_value($search_string, $element_name, $collection_id = NULL, $max_results = NULL){
 	$db = get_db();
 	$sql = "
 	SELECT items.id 
@@ -42,13 +43,21 @@ function get_element_by_valueOLD($search_string, $element_name){
 	ON element_texts.element_id = elements.id 
 	JOIN {$db->ElementSet} element_sets 
 	ON elements.element_set_id = element_sets.id 
-	AND elements.name = '" . $element_name . "' 
-	AND element_texts.text = ?";
+	AND elements.name = '" . $element_name . "'
+	AND element_texts.text = ? ";
+	if ($collection_id) {
+	    $sql .= "AND items.collection_id = '" . $collection_id . "'";
+    }
+    if ($max_results) {
+	    $sql .= "LIMIT 0," . $max_results;
+    }
 	$itemIds = $db->fetchAll($sql, $search_string);
+	$items = array();
 	if (count($itemIds) >= 1){
-        $found_item = get_record_by_id('item', $itemIds[0]["id"]);
-        return $found_item->id;
-#        return $found_item->id; #return just the id
+        foreach ($itemIds as $id){
+	        $items[] = get_record_by_id('item', $id["id"]);
+	    }
+	    return $items;
 	}
 	return null;
 }
@@ -72,8 +81,7 @@ function get_element_info_dynamic($search_string, $dublin_element_name, $show_el
 	AND elements.name = '" . $element_name . "' 
 	AND element_texts.text = ?";
 	$itemIds = $db->fetchAll($sql, $search_string);
-	print_r(get_class_methods($itemIds));
-	if (count($itemIds) == 1){ //NOG EVEN MEE VERDER STOEIEN
+	if (count($itemIds) == 1){
 		$temp_item = "";
 		$found_item = get_record_by_id('item', $itemIds[0]["id"]);
 		$temp_return = "<SPAN class='classic'>";

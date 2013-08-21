@@ -257,8 +257,34 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             print $html;
             print "</div>";
         }
+        
+        if (metadata("item", 'Item Type Name') == "Persoon"){
+            clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
+            print $this->vertellerVerhalenVerteld(metadata("item", array('Dublin Core', 'Title')));
+        }
     }
-
+    
+    
+    /**
+    *   Fetches information about the maker or narrator.
+    *   @returns html code containing amount of tales, and search link for narrator's tales.
+    *
+    **/
+    private function vertellerVerhalenVerteld($verteller){
+        $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1);
+        $amount_tales = count($verteldeVerhalen);
+        $tales_link = null;
+        $html = '<div id="item-metadata" class="element">';
+        $html .= '<h2>' . __("Creator") . ' ' . __("folktales") . ' (' . $amount_tales . ') </h2>';
+        foreach($verteldeVerhalen as $verteldVerhaal){
+            $url = record_url($verteldVerhaal, 'show');
+            $html .= '<p><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . metadata($verteldVerhaal, array('Dublin Core', 'Title')) . '</a></p>';
+        }
+        $html .= "</div>";
+        return $html;
+    }
+    
+    
     public function hookPublicItemsShowSidebarUltimateTop($args){
         print "<ul class='slide-toggle'>";
         print '<li class="up" id="slidetoggle">'.__("Show browse links").'</li>'; #TRANSLATE Informatie uitklappen
@@ -337,6 +363,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
     /*  Super specific code for checking the "Privacy Required" value of a person 
     * without going through the official permission system.
+    * A dirty dirty solution!
     *
     * Example: get_elements_private_status_by_value("Muiser, Iwe")
     * @Returns boolean
@@ -356,20 +383,29 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $stmt = $db_hack->prepare($sql);
 		$stmt->execute();
 		$itemId = $stmt->fetch();
-    	if (array_key_exists("id", $itemId)){
-    	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
-            $stmt = $db_hack->prepare($sql2);
-    		$stmt->execute();
-    		$item = $stmt->fetch();
-	    	if (array_key_exists("text", $item)){
-                if ($item["text"] == "ja"){
-                    return true;
+    	if ($itemId){
+    	    if (array_key_exists("id", $itemId)){
+        	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
+                $stmt = $db_hack->prepare($sql2);
+        		$stmt->execute();
+        		$item = $stmt->fetch();
+        		if ($item){
+        	    	if (array_key_exists("text", $item)){
+                        if ($item["text"] == "ja"){
+                            return true;
+                        }
+                    }
                 }
             }
     	}
     	return false;
     }
 
+    /**
+    *   This piece of code generates sql code to fetch items outside the safe environment of Omeka
+    *
+    *
+    **/
     private function illegal_sql_generator($search_string, $item_id, $element_name, $collection_id){
         $db = get_db();
     	$sql = "
