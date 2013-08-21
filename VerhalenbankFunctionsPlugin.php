@@ -278,7 +278,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $html .= '<h2>' . __("Creator") . ' ' . __("folktales") . ' (' . $amount_tales . ') </h2>';
         foreach($verteldeVerhalen as $verteldVerhaal){
             $url = record_url($verteldVerhaal, 'show');
-            $html .= '<p><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . metadata($verteldVerhaal, array('Dublin Core', 'Title')) . '</a></p>';
+            $html .= '<li><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . metadata($verteldVerhaal, array('Dublin Core', 'Title')) . '</a></li>';
         }
         $html .= "</div>";
         return $html;
