@@ -95,7 +95,7 @@ class DateFormatHuman{
      * @return string
      */
     function formatHuman(){
-        if ($this->fixed) return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . " (F)";
+        if ($this->fixed) return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . "";
         if (!$this->valid) return $this->date_span . " (foutieve datum)";
         else if ($this->is_identical($this->date_start, $this->date_end)){ //only one date
             return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd'))));
@@ -117,18 +117,31 @@ class DateFormatHuman{
         else if ($this->is_partof_year_dyn($this->date_start, $this->date_end)){ //part of a year
             return $this->year_quarters[$this->date_start->format('n') . " " . $this->date_end->format('n')] . " " . $this->date_start->format('Y');
         }
+        else if ($this->is_year_to_year($this->date_start, $this->date_end)){ //any other year to year with start = 1 jan and end = 31 dec
+            return $this->date_start->format('Y') . " - " . $this->date_end->format('Y');
+        }
         else{
-            return "Van " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . " t/m " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd'))));
+            return "Van " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . " t/m " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_end->format('Ymd'))));
         }
     }
     
-    
+    /**
+     * checks if date_start : YYYY-01-01 AND date_end : XXXX-12-31 
+     * @return string
+     */
+    function is_year_to_year($date_start, $date_end){
+        if ((date("Y-m-d", mktime(0, 0, 0, 13, 0, $date_end->format('Y'))) == $date_end->format('Y-m-d')) AND
+            (date("Y-m-d", mktime(0, 0, 0, 1, 1, $date_start->format('Y'))) == $date_start->format('Y-m-d'))){
+            return true;
+        }
+        else return false;
+    }
+
     /**
      * checks if date_start : [(100(C-1))+1]-01-01 AND date_start : [100C]-12-DD 
      * @return string
      */
     function is_partof_year($date_start, $date_end){
-#        print $date_start->format('m-d') . " " . $date_end->format('m-d');
         if (array_key_exists($date_start->format('m-d') . " " . $date_end->format('m-d'), $this->year_quarters)){
             return true;
         }
@@ -156,7 +169,7 @@ class DateFormatHuman{
      */
     function is_year($date_start, $date_end){
         if ((date("Y-m-d", mktime(0, 0, 0, 13, 0, $date_end->format('Y'))) == $date_end->format('Y-m-d')) AND
-            (date("Y-m-d", mktime(0, 0, 0, 1, 1, $date_start->format('Y'))) == $date_start->format('Y-m-d'))){
+            (date("Y-m-d", mktime(0, 0, 0, 1, 1, $date_end->format('Y'))) == $date_start->format('Y-m-d'))){
             return true;
         }
         else return false;
@@ -189,7 +202,7 @@ class DateFormatHuman{
      * @return string
      */
     function is_century($date_start, $date_end){
-        if ($date_end->format('Y') - $date_start->format('Y') == 99){
+        if ($date_end->format('Y') - $date_start->format('Y') == 99 && $date_start->format('y') == 1){
             return true;
         }
         else return false;

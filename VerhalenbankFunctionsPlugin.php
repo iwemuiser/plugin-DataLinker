@@ -139,12 +139,6 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $acl->deny("admin", "Collections", 'delete');
 
         $acl->allow("admin", array("Users"));
-
-#        $acl->allow(array('super', 'admin', 'contributor'), array('FolktaleAnnotator_Index'));
-#        $pageResource = new Zend_Acl_Resource('FolktaleAnnotator_Page');
-#        $acl->add($pageResource);
-#        $acl->allow(array('super', 'admin'), 'FolktaleAnnotator_Page', array('add', 'annotate'));
-#        $acl->allow('guest', 'Contribution_Contribution', array('show', 'contribute', 'thankyou', 'my-contributions'));        
     }
 
 	/**
@@ -358,8 +352,51 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
             }
         }
+        if(isset($view->items)) {
+            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
+        }
     }
 
+    public function hookAdminHead($args)
+     {
+         $view = get_view();
+         if(isset($view->item)) {
+             if (metadata("item", 'Item Type Name') == "Persoon"){
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
+             }
+             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
+             }
+             if (metadata("item", 'Item Type Name') == "Volksverhaal"){
+                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
+                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_privacy_hide', 1);
+                 }
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
+             }
+             #TODO: aangeven wanneer dit moet gebeuren zoals hierboven
+             if (metadata("item", 'Item Type Name') == "Volksverhaal" || metadata("item", 'Item Type Name') == "Lexicon item" || metadata("item", 'Item Type Name') == "Text Edition"){
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
+
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
+
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
+            }
+         }
+         if(isset($view->items)) {
+             add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
+         }
+     }
 
     /*  Super specific code for checking the "Privacy Required" value of a person 
     * without going through the official permission system.
@@ -424,35 +461,6 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     	return $sql;
     }
 
-    public function hookAdminHead($args)
-    {
-        $view = get_view();
-        if(isset($view->item)) {
-            if (metadata("item", 'Item Type Name') == "Persoon"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
-            }
-            if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
-            }
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
-            
-            
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
-            add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
-            add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
-        }
-    }
 
     public function filterPublicNavigationMain($args){
         #ONLY FOR NAVIGATION
