@@ -349,6 +349,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5); // should check if there is Text available
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text', 6);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),            'make_urls_clickable_in_text');
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
             }
         }
@@ -390,10 +391,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),                   'make_urls_clickable_in_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
             }
          }
-         if(isset($view->items)) {
+         if(isset($view->items) || isset($view->search)) {
              add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
          }
      }
@@ -745,7 +747,7 @@ function dummy_printer($args){
 }
 
 function make_urls_clickable_in_text($args){
-    return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/[^()<>\s]+)#i', '\\1<a target="linked" href="\\2">\\2</a>', $args);
+    return preg_replace('#(\A|[^=\]\'"a-zA-Z0-9])(http[s]?://(.+?)/*[^()<>\s]+)#i', '\\1<a target="linked" href="\\2">\\2</a>', $args);
 #	return url_to_link($args);
 }
 

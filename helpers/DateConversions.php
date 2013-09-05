@@ -44,13 +44,15 @@ class DateFormatHuman{
         75 =>   "Derde kwart",
         0 =>   "Vierde kwart");
 
+    //EEUW: eindwaarden
     public $century_positions = array(
         20 =>   "begin",                    //20 jaar
         60 =>   "midden",
         0 =>   "eind");
         
-    public $century_approx    =  50;                              //50 jaar
+    public $century_approx   =  50;         //50 jaar
     
+    //JAAR: perioden in een jaar (op bassis van maannummers)
     public $year_quarters = array(
         "1 3" =>    "Eerste kwartaal",
         "4 6" =>    "Tweede kwartaal",
@@ -73,8 +75,7 @@ class DateFormatHuman{
             $this->date_end = new DateTime($date_span[1]);
         }
         else{
-#            trigger_error("Date span $this->date_span not valid. Trying recovery...", E_USER_NOTICE);
-            $this->date_start = $this->recoverDate($date_span) ? new DateTime($this->recoverDate($date_span)) : "Invalid date (range)";
+            $this->date_start = $this->recoverDate($date_span) ? new DateTime($this->recoverDate($date_span)) : "Invalid date(range)";
         }
     }
     
@@ -101,7 +102,7 @@ class DateFormatHuman{
             return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd'))));
         }
         else if ($this->is_century($this->date_start, $this->date_end)){ //full century
-            return ($this->date_end->format('Y')/100)+1 . "e eeuw";
+            return ($this->date_end->format('Y')/100) . "e eeuw";
         }
         else if ($this->is_quarterof_century($this->date_start, $this->date_end)){ //quarter century
             $century = floor($this->date_start->format('Y')/100);
@@ -109,7 +110,8 @@ class DateFormatHuman{
         }
         else if ($this->is_positionin_century($this->date_start, $this->date_end)){ //part of century
             $century = floor($this->date_start->format('Y')/100);
-            return $this->century_positions[$this->date_end->format('Y') - (($century + 1) * 100)] . " " . ($century+1) . "e eeuw";
+            return $this->century_positions[$this->date_end->format('y')] . " " . ($century+1) . "e eeuw";
+#            return $this->century_positions[$this->date_end->format('Y') - (($century + 1) * 100)] . " " . ($century+1) . "e eeuw";
         }
         else if ($this->is_year($this->date_start, $this->date_end)){ //a year
             return $this->date_end->format('Y');
@@ -120,11 +122,26 @@ class DateFormatHuman{
         else if ($this->is_year_to_year($this->date_start, $this->date_end)){ //any other year to year with start = 1 jan and end = 31 dec
             return $this->date_start->format('Y') . " - " . $this->date_end->format('Y');
         }
+        else if ($this->is_month_in_year($this->date_start, $this->date_end)){ //any other year to year with start = 1 jan and end = 31 dec
+            return $this->nlDate(strftime("%B %Y", strtotime($this->date_start->format('Ymd'))));
+        }
         else{
             return "Van " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . " t/m " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_end->format('Ymd'))));
         }
     }
     
+    /**
+     * checks if date_start : YYYY-MM-01 AND date_end : YYYY-(MM+1)-31 
+     * @return string
+     */
+    function is_month_in_year($date_start, $date_end){
+        if ((date("Y-m-d", mktime(0, 0, 0, $date_start->format('m')+1, 0, $date_start->format('Y'))) == $date_end->format('Y-m-d')) AND
+            (date("Y-m-d", mktime(0, 0, 0, $date_start->format('m'), 1, $date_start->format('Y'))) == $date_start->format('Y-m-d'))){
+            return true;
+        }
+        else return false;
+    }
+        
     /**
      * checks if date_start : YYYY-01-01 AND date_end : XXXX-12-31 
      * @return string
@@ -142,7 +159,8 @@ class DateFormatHuman{
      * @return string
      */
     function is_partof_year($date_start, $date_end){
-        if (array_key_exists($date_start->format('m-d') . " " . $date_end->format('m-d'), $this->year_quarters)){
+        if (array_key_exists($date_start->format('m-d') . " " . $date_end->format('m-d'), $this->year_quarters) AND
+                ($date_end->format('Y') - $date_start->format('Y') == 24)){
             return true;
         }
         else return false;
@@ -156,7 +174,8 @@ class DateFormatHuman{
         foreach($this->year_quarters as $months => $value){
             $values = explode(" ", $months);
             if ((date("Y-m-d", mktime(0, 0, 0, $values[0], 1, $date_start->format('Y'))) == $date_start->format('Y-m-d')) AND
-                (date("Y-m-d", mktime(0, 0, 0, $values[1]+1, 0, $date_end->format('Y'))) == $date_end->format('Y-m-d'))){
+                (date("Y-m-d", mktime(0, 0, 0, $values[1]+1, 0, $date_end->format('Y'))) == $date_end->format('Y-m-d')) AND
+                ($date_end->format('Y') == $date_start->format('Y'))){
                 return true;
             }
         }
@@ -180,7 +199,7 @@ class DateFormatHuman{
      * @return string
      */
     function is_positionin_century($date_start, $date_end){
-        if ($date_end->format('Y') - $date_start->format('Y') == 19){
+        if (array_key_exists($date_end->format('y'), $this->century_positions) AND ($date_end->format('Y') - $date_start->format('Y') == 19)){
             return true;
         }
         else return false;
@@ -191,7 +210,9 @@ class DateFormatHuman{
      * @return string
      */
     function is_quarterof_century($date_start, $date_end){
-        if ($date_end->format('Y') - $date_start->format('Y') == 24){
+        if ((date("m-d", mktime(0, 0, 0, 13, 0, $date_end->format('Y'))) == $date_end->format('m-d')) AND
+            (date("m-d", mktime(0, 0, 0, 1, 1, $date_start->format('Y'))) == $date_start->format('m-d')) AND
+            $date_end->format('Y') - $date_start->format('Y') == 24){
             return true;
         }
         else return false;
@@ -217,14 +238,25 @@ class DateFormatHuman{
         return $interval->format("%a") == 0 ? true : false;
     }
     
+    function checkData($mydate) { 
+
+        list($yy,$mm,$dd) = explode("-",$mydate); 
+        if (is_numeric($yy) && is_numeric($mm) && is_numeric($dd)) 
+        { 
+            return checkdate($mm,$dd,$yy); 
+        } 
+        return false;            
+    }
+    
     function validate(){
         if (preg_match('/^\d{4}.\\d{2}.\\d{2}\s\d{4}.\\d{2}.\\d{2}/', $this->date_span)){
             $date_span = explode(' ', $this->date_span, 2);
-            try{
-                new DateTime($date_span[0]);
-                new DateTime($date_span[1]);
+            list($yy,$mm,$dd) = explode("-",$date_span[0]);
+            list($yy2,$mm2,$dd2) = explode("-",$date_span[1]);
+            if(checkdate($mm,$dd,$yy) AND checkdate($mm2,$dd2,$yy2)){
+                $this->valid = true;
             }
-            catch (Exception $e){
+            else{
                 $this->valid = false;
             }
         }
@@ -320,10 +352,9 @@ function subtest($date_span){
 }
 
 function test(){    
-    subtest("1982-05-11 1982-05-13");
+
+    echo "CORRECTE DATUM RANGES DIE TOT VERTALING LEIDEN:<br>";
     subtest("1982-05-11 1982-05-11");
-    subtest("1982-05-11 1982-0");
-    subtest("1982-05-");
     subtest("1901-01-01 2000-12-31");
     subtest("1901-01-01 1925-12-31");
     subtest("1251-01-01 1275-12-31");
@@ -333,8 +364,26 @@ function test(){
     subtest("1941-01-01 1960-03-31");
     subtest("1901-01-01 1901-02-28");
     subtest("1901-01-01 1901-02-31");
+  
+    subtest("1401-01-01 1450-12-31");
+    subtest("1426-01-01 1450-12-31");    
+    
+    subtest("1401-01-01 1401-01-31");
+    subtest("2001-08-01 2001-08-31");
+    
+    echo "WILLEKEURIGE DATUM RANGES:<br>";
+    subtest("1951-01-01 1970-03-31");
+    subtest("1982-05-11 1982-05-13");
+    subtest("1426-01-01 1450-03-31");
+    subtest("1401-01-01 1450-03-31");
+    subtest("1401-01-01 1425-01-31");
+                
+    echo "FOUTIEVE DATUM RANGES:<br>";
     subtest("blablabla");
+    subtest("1982-05-11 1982-0");
+    subtest("1982-05-");
     subtest("2001-01-01 20  01-01-01");
+    subtest("1941-01-01 1960-03-34");
 }
 
 //test();
