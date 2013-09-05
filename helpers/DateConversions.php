@@ -97,6 +97,7 @@ class DateFormatHuman{
      */
     function formatHuman(){
         if ($this->fixed) return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . "";
+        if (!isset($this->date_span)) {return "";}
         if (!$this->valid) return $this->date_span . " (foutieve datum)";
         else if ($this->is_identical($this->date_start, $this->date_end)){ //only one date
             return $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd'))));
@@ -249,7 +250,7 @@ class DateFormatHuman{
     }
     
     function validate(){
-        if (preg_match('/^\d{4}.\\d{2}.\\d{2}\s\d{4}.\\d{2}.\\d{2}/', $this->date_span)){
+        if (preg_match('/^\d{4}.\\d{2}.\\d{2}\s\d{4}.\\d{2}.\\d{2}$/', $this->date_span)){
             $date_span = explode(' ', $this->date_span, 2);
             list($yy,$mm,$dd) = explode("-",$date_span[0]);
             list($yy2,$mm2,$dd2) = explode("-",$date_span[1]);
@@ -384,6 +385,7 @@ function test(){
     subtest("1982-05-");
     subtest("2001-01-01 20  01-01-01");
     subtest("1941-01-01 1960-03-34");
+    subtest("1978-04-14, 1978-04-21 1978-04-21");
 }
 
 //test();
