@@ -23,7 +23,7 @@
 }
 
 
-.slide-toggle{
+.slide-toggle, .mobile{
     display: none;
 }
 
