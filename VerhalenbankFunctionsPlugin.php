@@ -283,8 +283,15 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         print "<ul class='slide-toggle'>";
         print '<li class="up" id="slidetoggle">'.__("Show browse links").'</li>'; #TRANSLATE Informatie uitklappen
         print '<li class="down" id="slidetoggle" style="display:none;">'.__("Hide browse links").'</li>';
+        print "<li id=\"google_translate_element\"></li>";
         print "</ul>";
-        
+/*        print "<script>
+        	function googleTranslateElementInit() {
+        	  new google.translate.TranslateElement({
+        	    pageLanguage: 'nl'
+        	  }, 'google_translate_element');
+        	}
+        	</script><script src=\"http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit\"></script>";*/
     }
     
     public function filterFileMarkup($html, $args){
@@ -315,6 +322,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     public function hookPublicHead($args)
     {
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
+        queue_css_file("print", "print");
         queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
         queue_js_file('showHide');
         queue_js_file('search_mod');

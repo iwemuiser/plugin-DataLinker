@@ -78,7 +78,7 @@ function creator_info_retrieve_popup_jquery($args){
     $subject_element_number = 39; #Creator / verteller
     $search_element = null;
     $return_element = null;
-    $collection = 1;
+    $collection = null;
     return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
