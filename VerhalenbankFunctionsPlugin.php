@@ -285,13 +285,13 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         print '<li class="down" id="slidetoggle" style="display:none;">'.__("Hide browse links").'</li>';
         print "<li id=\"google_translate_element\"></li>";
         print "</ul>";
-/*        print "<script>
+        print "<script>
         	function googleTranslateElementInit() {
         	  new google.translate.TranslateElement({
         	    pageLanguage: 'nl'
         	  }, 'google_translate_element');
         	}
-        	</script><script src=\"http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit\"></script>";*/
+        	</script><script src=\"http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit\"></script>";
     }
     
     public function filterFileMarkup($html, $args){
