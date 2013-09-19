@@ -2,9 +2,10 @@
 <?php
 $textcopyrightwarning                   = get_option('textcopyrightwarning');
 $textextremewarning                     = get_option('textextremewarning');
-$creatorprivatewarning                     = get_option('creatorprivatewarning');
+$creatorprivatewarning                  = get_option('creatorprivatewarning');
 $imagewarning                           = get_option('imagewarning');
 $kloekelink                             = get_option('kloekelink');
+$motiflink                              = get_option('motiflink');
 $subcollectionswithtypes                = get_option('subcollectionswithtypes');
 $mediumsearchablefields                 = get_option('mediumsearchablefields');
 
@@ -57,6 +58,16 @@ $view = get_view();
         <?php echo $view->formText('kloekelink', $kloekelink, array('class' => 'textinput')); ?>
         <p class="explanation">
             Hier kan de kale link naar de site komen te staan waar kloekenummers kunnen worden ingevoerd om weer te geven op een kaartje.
+        </p>
+    </div>
+</div>
+
+ <div class="field">
+    <?php echo $view->formLabel('motiflink', 'De link naar de Motif index website'); ?>
+    <div class="inputs">
+        <?php echo $view->formText('motiflink', $motiflink, array('class' => 'textinput')); ?>
+        <p class="explanation">
+            Hier kan de kale link naar de site komen te staan waar motieven kunnen worden bekeken.
         </p>
     </div>
 </div>

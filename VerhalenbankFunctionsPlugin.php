@@ -46,6 +46,34 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 
 
     /**
+     * Upgrades ExhibitBuilder's tables to be compatible with a new version.
+     *
+     * @param array $args expected keys:
+     *  'old_version' => Previous plugin version
+     *  'new_version' => Current version; to be upgraded to
+     */
+/*    function upgrade($args)
+    {
+        $oldVersion = $args['old_version'];
+        $newVersion = $args['new_version'];
+
+        // Transition to upgrade model for EB
+        if (version_compare($oldVersion, '1.0', '<=') )
+        {
+            $db = $this->_db;
+            $sql = "CREATE TABLE IF NOT EXISTS `$db->TemporaryMotifCollection` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `motif` INT UNSIGNED NOT NULL,
+                `display_name` VARCHAR(255) NOT NULL,
+                `top_motif` ENUM('Disallowed', 'Allowed', 'Required') NOT NULL DEFAULT 'Disallowed',
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `item_type_id` (`item_type_id`)
+                ) ENGINE=MyISAM;";
+            $db->query($sql);
+        }
+    }*/
+
+    /**
      * Return HTML props
      * 
      * @return string
@@ -79,6 +107,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
         set_option('creatorprivatewarning', $post['creatorprivatewarning']);
         set_option('imagewarning', $post['imagewarning']);
         set_option('kloekelink', $post['kloekelink']);
+        set_option('motiflink', $post['motiflink']);
         set_option('subcollectionswithtypes', $post['subcollectionswithtypes']);
         set_option('mediumsearchablefields', $post['mediumsearchablefields']);
         set_option('mediumsearchstyle', $post['mediumsearchstyle']);
@@ -107,6 +136,7 @@ This text contains language that can be perceived as extreme.");
 De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meertens Instituut, of met een admin account.");
 
         set_option('kloekelink', 'http://www.meertens.knaw.nl/kaart/v3/rest/?type=dutchlanguagearea&data[]=');
+        set_option('motiflink', 'http://www.dinor.demon.nl/motif/index.html?');
         set_option('subcollectionswithtypes', "2,6,7");
         set_option('mediumsearchablefields', "43,49,50,60,44,48,39,40,61,58,52,41,63,66,93,65,53,67,51,1");
         set_option('mediumsearchstyle', "contains");
@@ -156,7 +186,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     }
 
     public function hookItemsBrowseSql($args){
-        _log("ALSO THE BASIC SEARCH CAN BE EXTENDED HERE", $priority = Zend_Log::DEBUG);
+#        _log("ALSO THE BASIC SEARCH CAN BE EXTENDED HERE", $priority = Zend_Log::DEBUG);
         if(isset($args['params']['keywordsearch'])) {
             $terms = $args['params']['keywordsearch'];
             $db = $this->_db;
@@ -281,17 +311,17 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     
     public function hookPublicItemsShowSidebarUltimateTop($args){
         print "<ul class='slide-toggle'>";
+        print "<li id=\"google_translate_element\"></li>";
         print '<li class="up" id="slidetoggle">'.__("Show browse links").'</li>'; #TRANSLATE Informatie uitklappen
         print '<li class="down" id="slidetoggle" style="display:none;">'.__("Hide browse links").'</li>';
-        print "<li id=\"google_translate_element\"></li>";
         print "</ul>";
         print "<script>
-        	function googleTranslateElementInit() {
-        	  new google.translate.TranslateElement({
-        	    pageLanguage: 'nl'
-        	  }, 'google_translate_element');
-        	}
-        	</script><script src=\"http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit\"></script>";
+            function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'nl'
+                }, 'google_translate_element');
+            }
+            </script><script src=\"http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit\"></script>";
     }
     
     public function filterFileMarkup($html, $args){
@@ -323,7 +353,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     {
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
         queue_css_file("print", "print");
-        queue_css_file('linked'); // assumes myplugin has a /views/public/css/linked.css file
+        queue_css_file('linked'); // assumes plugin has a /views/public/css/linked.css file
         queue_js_file('showHide');
         queue_js_file('search_mod');
         $view = get_view();
@@ -338,12 +368,13 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_privacy_hide', 1);
                 }
-                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
+#                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
             }
             #TODO: aangeven wanneer dit moet gebeuren zoals hierboven
             if (metadata("item", 'Item Type Name') == "Volksverhaal" || metadata("item", 'Item Type Name') == "Lexicon item" || metadata("item", 'Item Type Name') == "Text Edition"){
+                
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Subject'),                      'subject_info_retrieve_popup_jquery', 7);
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Language'),                     'language_info_retrieve_popup_jquery', 7);
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Type'),                         'type_info_retrieve_popup_jquery', 7);
@@ -351,10 +382,14 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
-                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Location'), 'nep_info_retrieve_popup_jquery', 7);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
-
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Place of Action'),       'pvh_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Motif'),                 'motif_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference'),   'kloeke_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference in Text'),   'kloeke_info_retrieve_popup_jquery', 7);
+                
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5); // should check if there is Text available
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text', 6);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),            'make_urls_clickable_in_text');
@@ -393,13 +428,17 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),             'collector_info_retrieve_popup_jquery', 7);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Subgenre'),              'subgenre_info_retrieve_popup_jquery', 7);
-                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Place'),    'nep_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Location'), 'nep_info_retrieve_popup_jquery', 7);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity'),          'ne_other_info_retrieve_popup_jquery', 7); #later veranderen
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Named Entity Actor'),    'nea_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Place of Action'),       'pvh_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Motif'),                 'motif_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference'),   'kloeke_info_retrieve_popup_jquery', 7);
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference in Text'),   'kloeke_info_retrieve_popup_jquery', 7);
 
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
-                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),                   'make_urls_clickable_in_text');
+                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),            'make_urls_clickable_in_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
             }
          }
@@ -764,6 +803,10 @@ function my_kloeke_link_function($args){
     return "<a href='$kloeke_link'>$args</a>";
 }
 
+function my_motif_link_function($args){
+    $motif_link = get_option('motiflink') . $args;
+    return "<a href='$motif_link'>$args</a>";
+}
 
 /**
  * Return the site-wide search form.

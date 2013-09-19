@@ -1,5 +1,37 @@
 <?php
 
+/*
+*   Code for the representation of motifs on the public site.
+*           
+*/
+function motif_info_retrieve_popup_jquery($args){
+    $subject_element_number = 52; //motif
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, null, get_option('motiflink'));
+}
+
+/*
+*   Code for the representation of kloeke nummers.
+*           
+*/
+function kloeke_info_retrieve_popup_jquery($args){
+    $subject_element_number = 69;
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args, null, get_option('kloekelink'));
+}
+
+function pvh_info_retrieve_popup_jquery($args){
+    $subject_element_number = 65; //place of action
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
 function nep_info_retrieve_popup_jquery($args){
     $subject_element_number = 93; //Named entity place zoeken
     $search_element = null;
@@ -104,13 +136,15 @@ function present_dates_as_language($args){
     return $printable->formatHuman();
 }
 
-
 /*
 *   Returns HTML containing links to connected internal data sources
 *   
 *   it figures out if the same ID is present in the Lexicon, Perrault, Grimm, or Vertellers records.
 */
-function double_field_info($subject_element_number, $search_element = null, $return_element = null, $collection = null, $original_value = null, $return_itemset = 'Dublin Core'){
+function double_field_info($subject_element_number, $search_element = null, 
+                                $return_element = null, $collection = null, 
+                                $original_value = null, $return_itemset = 'Dublin Core',
+                                $external_link = null){
 #    print "-" . $subject_element_number . " - ". $search_element . " - ". $return_element . " - ". $collection . " - ". $original_value . " - ". $return_itemset;
     $html = "";
     $links = array();
@@ -122,6 +156,9 @@ function double_field_info($subject_element_number, $search_element = null, $ret
             $additional_information_pre = $additional->getElementTexts($return_itemset, $return_element);
             $additional_information = $additional_information_pre[0]["text"];
         }
+    }
+    if ($external_link){
+        $links[] = "<a href='$external_link$original_value' target='motif'>$original_value: " . __("Externe link") . "</a><br>";
     }
     $links[] = info_search_link($subject_element_number, $original_value, $collection);
     $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");  // check if the link to the item can be found
@@ -262,7 +299,7 @@ function info_search_link($element_number, $search_term, $collection = 1){
                                 "advanced[0][element_id]" => "$element_number",
                                 "advanced[0][type]" => "is exactly",
                                 "advanced[0][terms]" => "$search_term"));
-    return "<a href='".$taletype_search_url."'>" . $search_term . ": alle verhalen</a><br>";
+    return "<a href='".$taletype_search_url."'>" . $search_term . ": Alle verhalen</a><br>";
 }
 
 /*
