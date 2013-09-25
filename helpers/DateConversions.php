@@ -46,9 +46,9 @@ class DateFormatHuman{
 
     //EEUW: eindwaarden
     public $century_positions = array(
-        20 =>   "begin",                    //20 jaar
-        60 =>   "midden",
-        0 =>   "eind");
+        20 =>   "Begin",                    //20 jaar
+        60 =>   "Midden",
+        0 =>   "Eind");
         
     public $century_approx   =  50;         //50 jaar
     
@@ -63,10 +63,16 @@ class DateFormatHuman{
         "11 12" =>  "Eind"
         );
     
+    public $seasons = array();
+
     /**
      * constructs the class
-     */
+     */ 
     function __construct($date_span){
+        $this->seasons[date("m-d", mktime(0, 0, 0, 6, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 9, 22, 0))] = "Zomer";
+        $this->seasons[date("m-d", mktime(0, 0, 0, 9, 23, 0)) . " " . date("m-d", mktime(0, 0, 0, 12, 21, 0))] = "Herfst";
+        $this->seasons[date("m-d", mktime(0, 0, 0, 12, 22, 0)) . " " . date("m-d", mktime(0, 0, 0, 3, 20, 0))] = "Winter";
+        $this->seasons[date("m-d", mktime(0, 0, 0, 3, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 6, 20, 0))] = "Lente";
         $this->date_span = $date_span;
         $this->validate();
         if ($this->valid){
@@ -123,12 +129,27 @@ class DateFormatHuman{
         else if ($this->is_year_to_year($this->date_start, $this->date_end)){ //any other year to year with start = 1 jan and end = 31 dec
             return $this->date_start->format('Y') . " - " . $this->date_end->format('Y');
         }
-        else if ($this->is_month_in_year($this->date_start, $this->date_end)){ //any other year to year with start = 1 jan and end = 31 dec
+        else if ($this->is_month_in_year($this->date_start, $this->date_end)){ //any month in a year with start = 1 m and end = n m
             return $this->nlDate(strftime("%B %Y", strtotime($this->date_start->format('Ymd'))));
+        }
+        else if ($this->is_season_in_year($this->date_start, $this->date_end)){ //a season in a year
+            return $this->seasons[$this->date_start->format('m-d') . " " . $this->date_end->format('m-d')] . " " . $this->date_end->format('Y');
         }
         else{
             return "Van " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_start->format('Ymd')))) . " t/m " . $this->nlDate(strftime("%A %d %B %Y", strtotime($this->date_end->format('Ymd'))));
         }
+    }
+    
+    
+    /**
+     * checks if date_start : YYYY-MM-01 AND date_end : YYYY-(MM+1)-31 
+     * @return string
+     */
+    function is_season_in_year($date_start, $date_end){
+        if (array_key_exists($date_start->format('m-d') . " " . $date_end->format('m-d'), $this->seasons)){
+            return true;
+        }
+        else return false;
     }
     
     /**
