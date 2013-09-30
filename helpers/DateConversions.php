@@ -118,7 +118,6 @@ class DateFormatHuman{
         else if ($this->is_positionin_century($this->date_start, $this->date_end)){ //part of century
             $century = floor($this->date_start->format('Y')/100);
             return $this->century_positions[$this->date_end->format('y')] . " " . ($century+1) . "e eeuw";
-#            return $this->century_positions[$this->date_end->format('Y') - (($century + 1) * 100)] . " " . ($century+1) . "e eeuw";
         }
         else if ($this->is_year($this->date_start, $this->date_end)){ //a year
             return $this->date_end->format('Y');

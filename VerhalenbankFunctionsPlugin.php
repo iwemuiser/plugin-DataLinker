@@ -46,8 +46,8 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 
 
     /**
-     * Upgrades ExhibitBuilder's tables to be compatible with a new version.
-     *
+     * Upgrades tables to be compatible with a new version.
+     * Temporary motif collection integration?
      * @param array $args expected keys:
      *  'old_version' => Previous plugin version
      *  'new_version' => Current version; to be upgraded to
@@ -570,11 +570,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     function filterAdminDashboardStats($stats)
     {   
     	$vvcollection = get_record_by_id('Collection', 1);
-    	$stats[] = array(link_to($vvcollection, null, metadata($vvcollection, 'total_items')), __('Volksverhalen'));
+    	$stats[] = array(link_to($vvcollection, null, metadata($vvcollection, 'total_items')), __('Folktales'));
     	$pcollection = get_record_by_id('Collection', 4);
-    	$stats[] = array(link_to($pcollection, null, metadata($pcollection, 'total_items')), __('Vertellers'));
+    	$stats[] = array(link_to($pcollection, null, metadata($pcollection, 'total_items')), __('Narrators'));
     	$tpcollection = get_record_by_id('Collection', 3);
-    	$stats[] = array(link_to($tpcollection, null, metadata($tpcollection, 'total_items')), __('Verhaaltypen'));
+    	$stats[] = array(link_to($tpcollection, null, metadata($tpcollection, 'total_items')), __('Folktale Types'));
         return $stats;
     }
 

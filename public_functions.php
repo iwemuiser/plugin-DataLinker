@@ -138,14 +138,19 @@ function present_dates_as_language($args){
 
 /*
 *   Returns HTML containing links to connected internal data sources
-*   
+*   $subject_element_number = the element ID that needs linking
+*   $search_element = The element (element title!) that needs to be found for linking
+*   $return_element = The element (element title!) that needs to be shown in addition to the subject element
+*   $collection = The collection that needs to be looked in
+*   $original_value = The original subjects value (for showing)
+*   $return_itemset = The Itemset that the return element is in (Dublin Core or Item Type Metadata)
+*   $external_link = An external link resource after which a value will be pasted
 *   it figures out if the same ID is present in the Lexicon, Perrault, Grimm, or Vertellers records.
 */
 function double_field_info($subject_element_number, $search_element = null, 
                                 $return_element = null, $collection = null, 
                                 $original_value = null, $return_itemset = 'Dublin Core',
                                 $external_link = null){
-#    print "-" . $subject_element_number . " - ". $search_element . " - ". $return_element . " - ". $collection . " - ". $original_value . " - ". $return_itemset;
     $html = "";
     $links = array();
     $supplemented_value = $original_value;
@@ -158,10 +163,10 @@ function double_field_info($subject_element_number, $search_element = null,
         }
     }
     if ($external_link){
-        $links[] = "<a href='$external_link$original_value' target='motif'>$original_value: " . __("Externe link") . "</a><br>";
+        $links[] = "<a href='$external_link$original_value' target='motif'>$original_value: " . __("External link") . "</a><br>";
     }
     $links[] = info_search_link($subject_element_number, $original_value, $collection);
-    $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");  // check if the link to the item can be found
+    $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");  //check if the link to the item can be found
     $links[] = info_item_link("Subject", $original_value, 2, "in Lexicon");         //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Perrault
     $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Grimm
@@ -180,7 +185,8 @@ function browse_link_in_menu($original_value, $additional_information, $links){
     $html = $original_value;
     $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
     if ($supplemented_value){
-        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", "\.", ":"), "", $original_value); //for unique id name
+        $allowed = "/[^a-z0-9]/i";
+        $pasted_args = preg_replace($allowed, "", $original_value); //for unique id name
         $html = '
         <div id="button">
             <ul class="hover">
@@ -204,7 +210,8 @@ function browse_link_in_toggler($original_value, $additional_information, $links
     $supplemented_value = $original_value . ($additional_information ? " - " . $additional_information : "");
     
     if ($supplemented_value && !preg_match('/<.+>/', $original_value)){
-        $pasted_args = str_replace(array(" ", "\r", "*", ")", "(", ",", "-", ".", ":"), "", $original_value);
+        $allowed = "/[^a-z0-9]/i";
+        $pasted_args = preg_replace($allowed, "", $original_value); //for unique id name
         $html = '
             <p class="toggler" id="toggler-' . $pasted_args . '">
                 <span class="expandSlider">' . $supplemented_value . ' &nbsp&nbsp&nbsp <img src= "' . url("themes/verhalenbank/images/down.gif").'"></span>
@@ -252,7 +259,7 @@ function info_item_link($element_name, $search_term, $collection_id = NULL, $ga_
 */
 function scroll_to_full_text($args){
     $itemtype = "volksverhaal";
-    return $args . "<br><b><a id='text-scroll' href='#$itemtype-item-type-metadata-text'>" . __("Bekijk volledige tekst") . "</a></b>";
+    return $args . "<br><b><a id='text-scroll' href='#$itemtype-item-type-metadata-text'>" . __("View full text") . "</a></b>";
 }
 
 
@@ -299,7 +306,7 @@ function info_search_link($element_number, $search_term, $collection = 1){
                                 "advanced[0][element_id]" => "$element_number",
                                 "advanced[0][type]" => "is exactly",
                                 "advanced[0][terms]" => "$search_term"));
-    return "<a href='".$taletype_search_url."'>" . $search_term . ": Alle verhalen</a><br>";
+    return "<a href='".$taletype_search_url."'>" . $search_term . ": " . __("All Items") . "</a><br>";
 }
 
 /*
@@ -332,7 +339,7 @@ function text_extreme_hide($args){
 	}
 	if ($args){
 		if (metadata(get_current_record('item'), array('Item Type Metadata', 'Extreme')) == "ja"){
-			return get_option('textextremewarning');
+			return __(get_option('textextremewarning'));
 		}
 		else{
 			return $args;
@@ -350,7 +357,7 @@ function creator_privacy_hide($args){
 	if ($user = current_user()){
 		return $args;
 	}
-    return get_option('creatorprivatewarning');
+    return __(get_option('creatorprivatewarning'));
 /*	if ($args){
 		if (!get_elements_private_status_by_value($args)){
 			return get_option('creatorprivatewarning');
