@@ -146,6 +146,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      * Initialize the plugin.
      */
     public function hookInitialize(){
+#        queue_css_url("http://www.meertens.knaw.nl/cms/templates/mi_hetgelaat/js/meertens.databanken.js");
         add_translation_source(dirname(__FILE__) . '/languages');
         // Register the select filter controller plugin.
 		$front = Zend_Controller_Front::getInstance();
@@ -622,7 +623,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
         $zoeken_html .= '<H2>Zoek in Volksverhalen</H2>';
 
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Zoek in tekst</label><br>';
         $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="1">';
         $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="1" >';
@@ -631,7 +632,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $zoeken_html .= __('search') . '">';
         $zoeken_html .= "</form>";
 
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Zoek in tags</label><br>';
 #        $zoeken_html .= '<input type="hidden" name="advanced[0][element_id]" id="advanced[0][element_id]" value="">';
         $zoeken_html .= '<input type="hidden" name="collection" id="collection" value="1" >';
@@ -641,7 +642,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $zoeken_html .= "</form>";
 
         /*zoeken in velden 63 65 66 (exclusive)*/
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Zoek in named entities</label><br>';
         $zoeken_html .= '<select name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" style="width: 140px">
                             <option value="63">Generiek (oud)</option>
@@ -657,7 +658,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
         $zoeken_html .= '<H2>Zoek in Verhaaltypen</H2>';
 
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Beschrijving</label><br>';
         $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="41" >';
 #        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
@@ -667,7 +668,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $zoeken_html .= __('search') . '">';
         $zoeken_html .= "</form>";
 
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Verhaaltypenummer (Aanduiding)</label>';
         $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="43" >';
 #        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
@@ -679,7 +680,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
 
         $zoeken_html .= '<H2>Zoek in Vertellers</H2>';
 
-        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/vb/admin/items/browse" method="GET">';
+        $zoeken_html .= '<form id="' . url(array('controller'=>'items', 'action'=>'browse')). '" action="/admin/items/browse" method="GET">';
         $zoeken_html .= '<label>Op naam</label><br>';
         $zoeken_html .= '<input type="hidden" name="keywordsearch[0][element_id]" id="keywordsearch[0][element_id]" value="50" >';
 #        $zoeken_html .= '<input type="hidden" name="advanced[0][type]" id="advanced[0][type]" value="contains" >';
@@ -740,8 +741,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $item_toevoegen = 
         $folktale_html = "";
         $folktale_html .= "<H1>Volksverhalenbank functies</H1><br>";
-        $folktale_html .= "<a class='small blue advanced-search-link button' href='/vb/admin/items/search'>Geavanceerd zoeken</a>";
-        $folktale_html .= "<a href='/vb/admin/items/add' class='add button small green'>Voeg een item toe</a><br>";
+        $folktale_html .= "<a class='small blue advanced-search-link button' href='/admin/items/search'>Geavanceerd zoeken</a>";
+        $folktale_html .= "<a href='/admin/items/add' class='add button small green'>Voeg een item toe</a><br>";
 
         $folktale_html .= "<H2>Invoerhulp websites / lijsten</H2><br>";
         $folktale_html .= '<UL STYLE="list-style-type: disc;">';
