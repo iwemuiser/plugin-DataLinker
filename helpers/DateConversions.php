@@ -69,19 +69,25 @@ class DateFormatHuman{
      * constructs the class
      */ 
     function __construct($date_span){
-        $this->seasons[date("m-d", mktime(0, 0, 0, 6, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 9, 22, 0))] = "Zomer";
-        $this->seasons[date("m-d", mktime(0, 0, 0, 9, 23, 0)) . " " . date("m-d", mktime(0, 0, 0, 12, 21, 0))] = "Herfst";
-        $this->seasons[date("m-d", mktime(0, 0, 0, 12, 22, 0)) . " " . date("m-d", mktime(0, 0, 0, 3, 20, 0))] = "Winter";
-        $this->seasons[date("m-d", mktime(0, 0, 0, 3, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 6, 20, 0))] = "Lente";
-        $this->date_span = $date_span;
-        $this->validate();
-        if ($this->valid){
-            $date_span = explode(' ', $this->date_span, 2);
-            $this->date_start = new DateTime($date_span[0]);
-            $this->date_end = new DateTime($date_span[1]);
-        }
-        else{
-            $this->date_start = $this->recoverDate($date_span) ? new DateTime($this->recoverDate($date_span)) : "Invalid date(range)";
+        try {
+            $this->seasons[date("m-d", mktime(0, 0, 0, 6, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 9, 22, 0))] = "Zomer";
+            $this->seasons[date("m-d", mktime(0, 0, 0, 9, 23, 0)) . " " . date("m-d", mktime(0, 0, 0, 12, 21, 0))] = "Herfst";
+            $this->seasons[date("m-d", mktime(0, 0, 0, 12, 22, 0)) . " " . date("m-d", mktime(0, 0, 0, 3, 20, 0))] = "Winter";
+            $this->seasons[date("m-d", mktime(0, 0, 0, 3, 21, 0)) . " " . date("m-d", mktime(0, 0, 0, 6, 20, 0))] = "Lente";
+            $this->date_span = $date_span;
+            $this->validate();
+            if ($this->valid){
+                $date_span = explode(' ', $this->date_span, 2);
+                $this->date_start = new DateTime($date_span[0]);
+                $this->date_end = new DateTime($date_span[1]);
+            }
+            else{
+                $this->date_start = $this->recoverDate($date_span) ? new DateTime($this->recoverDate($date_span)) : "Invalid date(range)";
+            }
+        } catch (Exception $e) {
+            $this->date_start = $date_span;
+            $this->fixed = False;
+            echo 'incorrect date: ',  $e->getMessage();
         }
     }
     
@@ -406,6 +412,7 @@ function test(){
     subtest("2001-01-01 20  01-01-01");
     subtest("1941-01-01 1960-03-34");
     subtest("1978-04-14, 1978-04-21 1978-04-21");
+    subtest("2011-31-10");
 }
 
 //test();
