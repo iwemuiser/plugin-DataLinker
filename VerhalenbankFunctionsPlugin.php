@@ -296,14 +296,23 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     *
     **/
     private function vertellerVerhalenVerteld($verteller){
-        $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1);
-        $amount_tales = count($verteldeVerhalen);
+        $verteldeVerhalen = NULL;
+        $amount_tales = __("te veel (max. 200 resultaten)");
+        if (metadata("item", 'collection_name') == "Vertellers"){
+            $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1);
+            $amount_tales = count($verteldeVerhalen);
+        }
+        if (metadata("item", 'collection_name') == "Verzamelaars"){
+            $verteldeVerhalen = get_list_elements_by_value($verteller, "Collector", 1, 200);
+#            $amount_tales = count(get_list_elements_by_value($verteller, "Collector", 1));
+        }
         $tales_link = null;
         $html = '<div id="item-metadata" class="element">';
         $html .= '<h2>' . __("Creator") . ' ' . __("folktales") . ' (' . $amount_tales . ') </h2>';
         foreach($verteldeVerhalen as $verteldVerhaal){
             $url = record_url($verteldVerhaal, 'show');
-            $html .= '<li><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . metadata($verteldVerhaal, array('Dublin Core', 'Title')) . '</a></li>';
+            $html .= '<li><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . 
+                        metadata($verteldVerhaal, array('Dublin Core', 'Title')) . '</a></li>';
         }
         $html .= "</div>";
         return $html;
@@ -359,8 +368,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         queue_js_file('search_mod');
         $view = get_view();
         if(isset($view->item)) {
-            if (metadata("item", 'Item Type Name') == "Persoon"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                        'title_person_info_retrieve_popup_jquery', 7);
+            if (metadata("item", 'collection_name') == "Vertellers"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_maker_info_retrieve_popup_jquery', 7);
+            }
+            if (metadata("item", 'collection_name') == "Verzamelaars"){
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_collector_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
@@ -406,8 +418,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      {
          $view = get_view();
          if(isset($view->item)) {
-             if (metadata("item", 'Item Type Name') == "Persoon"){
-                 add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_person_info_retrieve_popup_jquery', 7);
+             if (metadata("item", 'Collection') == "Vertellers"){
+                 add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_maker_info_retrieve_popup_jquery', 7);
              }
              if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);

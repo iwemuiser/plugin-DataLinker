@@ -56,8 +56,16 @@ function ne_other_info_retrieve_popup_jquery($args){
     return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
 }
 
-function title_person_info_retrieve_popup_jquery($args){
+function title_maker_info_retrieve_popup_jquery($args){
     $subject_element_number = 39; //Maker zoeken
+    $search_element = null;
+    $return_element = null;
+    $collection = 1;
+    return double_field_info($subject_element_number, $search_element, $return_element, $collection, $args);
+}
+
+function title_collector_info_retrieve_popup_jquery($args){
+    $subject_element_number = 60; //Maker zoeken
     $search_element = null;
     $return_element = null;
     $collection = 1;
