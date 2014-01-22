@@ -296,15 +296,16 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     *
     **/
     private function vertellerVerhalenVerteld($verteller){
+        $maxverhalen = 50;
         $verteldeVerhalen = NULL;
-        $amount_tales = __("te veel (max. 200 resultaten)");
+        $amount_tales = __("te veel (max. $maxverhalen resultaten)");
         if (metadata("item", 'collection_name') == "Vertellers"){
             $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1);
             $amount_tales = count($verteldeVerhalen);
         }
         if (metadata("item", 'collection_name') == "Verzamelaars"){
-            $verteldeVerhalen = get_list_elements_by_value($verteller, "Collector", 1, 200);
-#            $amount_tales = count(get_list_elements_by_value($verteller, "Collector", 1));
+            $verteldeVerhalen = get_list_elements_by_value($verteller, "Collector", 1, $maxverhalen);
+#            $amount_tales = count_elements($verteller, "Collector", 1, $maxverhalen);
         }
         $tales_link = null;
         $html = '<div id="item-metadata" class="element">';
@@ -418,9 +419,12 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      {
          $view = get_view();
          if(isset($view->item)) {
-             if (metadata("item", 'Collection') == "Vertellers"){
-                 add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_maker_info_retrieve_popup_jquery', 7);
-             }
+             if (metadata("item", 'collection_name') == "Vertellers"){
+                  add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_maker_info_retrieve_popup_jquery', 7);
+              }
+              if (metadata("item", 'collection_name') == "Verzamelaars"){
+                  add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_collector_info_retrieve_popup_jquery', 7);
+              }
              if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
              }

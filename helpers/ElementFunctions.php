@@ -32,6 +32,33 @@ function get_element_by_value($search_string, $element_name, $collection_id = NU
 /* 
 * Example: get_element_id_by_value("TM 2001", "Subject")
 */
+function count_elements($search_string, $element_name, $collection_id = NULL, $max_results = NULL){
+	$db = get_db();
+	$sql = "
+	SELECT COUNT items.id 
+	FROM {$db->Item} items 
+	JOIN {$db->ElementText} element_texts 
+	ON items.id = element_texts.record_id 
+	JOIN {$db->Element} elements 
+	ON element_texts.element_id = elements.id 
+	JOIN {$db->ElementSet} element_sets 
+	ON elements.element_set_id = element_sets.id 
+	AND elements.name = '" . $element_name . "'
+	AND element_texts.text = ? ";
+	if ($collection_id) {
+	    $sql .= "AND items.collection_id = '" . $collection_id . "'";
+    }
+    if ($max_results) {
+	    $sql .= "LIMIT 0," . $max_results;
+    }
+	return $db->fetchOne($sql, $search_string);
+    
+	return null;
+}
+
+/* 
+* Example: get_element_id_by_value("TM 2001", "Subject")
+*/
 function get_list_elements_by_value($search_string, $element_name, $collection_id = NULL, $max_results = NULL){
 	$db = get_db();
 	$sql = "
