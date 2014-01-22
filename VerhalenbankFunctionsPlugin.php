@@ -353,7 +353,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     public function hookPublicHead($args)
     {
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
-        queue_css_file("print", "print");
+        queue_css_file("print", "print"); // queues a css file to print pages
         queue_css_file('linked'); // assumes plugin has a /views/public/css/linked.css file
         queue_js_file('showHide');
         queue_js_file('search_mod');

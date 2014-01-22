@@ -171,6 +171,7 @@ function double_field_info($subject_element_number, $search_element = null,
     $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Perrault
     $links[] = info_item_link("Subject", $original_value, 7, "in Grimm");           //check if the value can be found in subcollection Grimm
     $links[] = info_item_link("Title", $original_value, 4,   "in Vertellers");      //check if the value can be found in subcollection Vertellers
+    $links[] = info_item_link("Title", $original_value, 9,   "in Verzamelaars");      //check if the value can be found in subcollection Verzamelaars
     if (is_admin_theme()) {
         $html = browse_link_in_table($original_value, $additional_information, $links); //the additional information is put in a table format
     }
