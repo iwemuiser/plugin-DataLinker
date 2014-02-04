@@ -18,6 +18,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                 'config_form',
                                 'config',
 #                                'public_items_show_top',
+                                'admin_items_form_item_types',
                                 'public_items_show_sidebar_top',
                                 'public_items_show_sidebar_ultimate_top',
                                 'admin_head',
@@ -309,7 +310,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         }
         $tales_link = null;
         $html = '<div id="item-metadata" class="element">';
-        $html .= '<h2>' . __("Creator") . ' ' . __("folktales") . ' (' . $amount_tales . ') </h2>';
+        $html .= '<h2>' . __(metadata("item", 'collection_name')) . ' ' . __("folktales") . ' (' . $amount_tales . ') </h2>';
         foreach($verteldeVerhalen as $verteldVerhaal){
             $url = record_url($verteldVerhaal, 'show');
             $html .= '<li><a href=' . $url . '>' . metadata($verteldVerhaal, array('Dublin Core', 'Identifier')) . " - " . 
@@ -415,8 +416,15 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         }
     }
 
+
+    public function hookAdminItemsFormItemTypes(){
+         queue_js_file('input-autocompleter');
+//         print "AARGG!";
+    }
+    
     public function hookAdminHead($args)
-     {
+    {
+         queue_js_file('input-autocompleter');
          $view = get_view();
          if(isset($view->item)) {
              if (metadata("item", 'collection_name') == "Vertellers"){
