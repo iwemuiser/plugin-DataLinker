@@ -147,17 +147,17 @@ function dateTranslator(elementNumber) {
 jQuery(document).ready(function() {
     server = "http://bookstore.ewi.utwente.nl/afact/";
 //    server = "http://127.0.0.1/testing/resting/";
-    autocompleteAdd(     "43", server . "identifier.json?style=list&code=");     //identificatie code helper
-    autocompleteExternal("52", server . "motif.json?style=list&code=");     //motif helper
-    autocompleteExternal("49", server . "folktaletype.json?style=list&search=");//folktaletype helper
+    autocompleteAdd(     "43", server + "identifier.json?style=list&code=");     //identificatie code helper
+    autocompleteExternal("52", server + "motif.json?style=list&code=");     //motif helper
+    autocompleteExternal("49", server + "folktaletype.json?style=list&search=");//folktaletype helper
     dateTranslator("40");                           //date helper
-    autocompleteExternal("39", server . "creator.json?style=list&search=");     //verteller(creator) helper
-    autocompleteExternal("60", server . "collector.json?style=list&search=");   //verzamelaar helper
+    autocompleteExternal("39", server + "creator.json?style=list&search=");     //verteller(creator) helper
+    autocompleteExternal("60", server + "collector.json?style=list&search=");   //verzamelaar helper
     //medewerker helper
-    autocompleteExternal("93", server . "namedentities_location.json?style=list&search=");   //Named entities PLACES helper
-    autocompleteExternal("63", server . "namedentities_other.json?style=list&search=");     //Named entities OTHER helper
-    autocompleteExternal("65", server . "place_of_action.json?style=list&search=");         //plaats van handelen helper
-    autocompleteExternal("67", server . "corpus.json?style=list&search=");         //CORPUS helper
+    autocompleteExternal("93", server + "namedentities_location.json?style=list&search=");   //Named entities PLACES helper
+    autocompleteExternal("63", server + "namedentities_other.json?style=list&search=");     //Named entities OTHER helper
+    autocompleteExternal("65", server + "place_of_action.json?style=list&search=");         //plaats van handelen helper
+    autocompleteExternal("67", server + "corpus.json?style=list&search=");         //CORPUS helper
     //kloekehelper??
     
 });
