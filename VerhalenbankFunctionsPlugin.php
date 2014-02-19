@@ -42,7 +42,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights"),//, "Creator"), #CREATOR TEMPORARY -> check Creator(39): privacy(89)
                                             "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date"));
     
-    public $_metadata_to_the_right = array("Dublin Core" => array("Creator", "Contributor", "Type", "Language"),
+    public $_metadata_to_the_right = array("Dublin Core" => array("Identifier", "Creator", "Contributor", "Type", "Language"),
                                             "Item Type Metadata" => array("Collector"));
 
 
