@@ -301,8 +301,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $verteldeVerhalen = NULL;
         $amount_tales = __("te veel (max. $maxverhalen resultaten)");
         if (metadata("item", 'collection_name') == "Vertellers"){
-            $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1);
-            $amount_tales = count($verteldeVerhalen);
+            $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1, $maxverhalen);
+#            $amount_tales = count($verteldeVerhalen);
         }
         if (metadata("item", 'collection_name') == "Verzamelaars"){
             $verteldeVerhalen = get_list_elements_by_value($verteller, "Collector", 1, $maxverhalen);
