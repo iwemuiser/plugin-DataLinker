@@ -34,7 +34,9 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
 	                            'public_navigation_admin_bar',
                                 'admin_dashboard_panels',
                                 'admin_dashboard_stats',
-                                'public_navigation_items'
+                                'public_navigation_items',
+#                                'define_action_contexts', 
+                                'media_rss_action_context'
 #                                'admin_navigation_main',
 #                                'public_navigation_main'
                                 );
@@ -46,33 +48,13 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                             "Item Type Metadata" => array("Collector"));
 
 
-    /**
-     * Upgrades tables to be compatible with a new version.
-     * Temporary motif collection integration?
-     * @param array $args expected keys:
-     *  'old_version' => Previous plugin version
-     *  'new_version' => Current version; to be upgraded to
-     */
-/*    function upgrade($args)
+    function filterMediaRssActionContext($context)
     {
-        $oldVersion = $args['old_version'];
-        $newVersion = $args['new_version'];
+        $context['rssm'] = array('suffix'  => 'rssm', 
+                                'headers' => array('Content-Type' => 'text/xml'));
 
-        // Transition to upgrade model for EB
-        if (version_compare($oldVersion, '1.0', '<=') )
-        {
-            $db = $this->_db;
-            $sql = "CREATE TABLE IF NOT EXISTS `$db->TemporaryMotifCollection` (
-                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                `motif` INT UNSIGNED NOT NULL,
-                `display_name` VARCHAR(255) NOT NULL,
-                `top_motif` ENUM('Disallowed', 'Allowed', 'Required') NOT NULL DEFAULT 'Disallowed',
-                PRIMARY KEY (`id`),
-                UNIQUE KEY `item_type_id` (`item_type_id`)
-                ) ENGINE=MyISAM;";
-            $db->query($sql);
-        }
-    }*/
+        return $context;
+    }
 
     /**
      * Return HTML props

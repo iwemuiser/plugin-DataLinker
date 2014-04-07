@@ -173,7 +173,8 @@ function double_field_info($subject_element_number, $search_element = null,
     if ($external_link){
         $links[] = "<a href='$external_link$original_value' target='motif'>$original_value: " . __("External link") . "</a><br>";
     }
-    $links[] = info_search_link($subject_element_number, $original_value, $collection);
+    $links[] = info_search_link($subject_element_number, $original_value, $collection, __("All folktales"));
+    $links[] = info_search_link(43, $original_value, 3, __("All folktale types"));      //43 is Identifier
     $links[] = info_item_link($search_element, $original_value, 3, "verhaaltype");  //check if the link to the item can be found
     $links[] = info_item_link("Subject", $original_value, 2, "in Lexicon");         //check if the value can be found in subcollection Lexicon
     $links[] = info_item_link("Subject", $original_value, 6, "in Perrault");        //check if the value can be found in subcollection Perrault
@@ -305,7 +306,7 @@ function info_subcollection_items($element_number, $search_term, $collections = 
 * @param int $search_term       The term that should be searched
 * @return string                Link to a search
 */
-function info_search_link($element_number, $search_term, $collection = 1){
+function info_search_link($element_number, $search_term, $collection = 1, $commentary){
     $element = get_db()->getTable("Element")->find($element_number);
     $element_name = $element->name;
     $taletype_search_url = url(array('module'=>'items','controller'=>'browse'), 'default', 
@@ -315,7 +316,7 @@ function info_search_link($element_number, $search_term, $collection = 1){
                                 "advanced[0][element_id]" => "$element_number",
                                 "advanced[0][type]" => "is exactly",
                                 "advanced[0][terms]" => "$search_term"));
-    return "<a href='".$taletype_search_url."'>" . $search_term . ": " . __("All Items") . "</a><br>";
+    return "<a href='".$taletype_search_url."'>" . $search_term . ": " . $commentary . "</a><br>";
 }
 
 /*
