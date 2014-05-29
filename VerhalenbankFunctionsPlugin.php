@@ -353,17 +353,18 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $view = get_view();
         if(isset($view->item)) {
             if (metadata("item", 'collection_name') == "Vertellers"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_maker_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                        'title_maker_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'collection_name') == "Verzamelaars"){
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                    'title_collector_info_retrieve_popup_jquery', 7);
+                add_filter(array('Display', 'Item', 'Dublin Core', 'Title'),                        'title_collector_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'Item Type Name') == "Volksverhaaltype"){
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'Item Type Name') == "Volksverhaal"){
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
-                    add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_privacy_hide', 1);
+                    add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
+                    add_filter(array('Display', 'Item', 'Dublin Core', 'Collector'),                'creator_privacy_hide', 1);
                 }
 #                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);

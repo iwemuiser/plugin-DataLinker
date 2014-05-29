@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VolksverhalenFunctions\n"
 "Report-Msgid-Bugs-To: http://github.com/iwemuiser/plugin-DataLinker/issues\n"
 "POT-Creation-Date: 2013-04-12 21:49-0500\n"
-"PO-Revision-Date: 2014-04-07 12:07+0100\n"
+"PO-Revision-Date: 2014-04-07 12:21+0100\n"
 "Last-Translator: Iwe EC Muiser <e.c.muiser@utwente.nl>\n"
 "Language-Team: Dutch (http://www.transifex.net/projects/p/omeka/team/nl/)\n"
 "MIME-Version: 1.0\n"
@@ -65,10 +65,10 @@ msgstr "Er ging iets fout"
 msgid "Narration Date"
 msgstr "Verteldatum"
 
-#: public_functions.php:26
+#: admin_functions.php:26
 msgid "All folktales"
 msgstr "Alle volksverhalen"
 
-#: public_functions.php:26
+#: admin_functions.php:26
 msgid "All folktale types"
 msgstr "Alle volksverhaaltypen"
