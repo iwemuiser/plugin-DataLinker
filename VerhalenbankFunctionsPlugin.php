@@ -364,7 +364,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             if (metadata("item", 'Item Type Name') == "Volksverhaal"){
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
-                    add_filter(array('Display', 'Item', 'Dublin Core', 'Collector'),                'creator_privacy_hide', 1);
+                    add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),         'creator_privacy_hide', 1);
                 }
 #                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
@@ -421,7 +421,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
              }
              if (metadata("item", 'Item Type Name') == "Volksverhaal"){
                  if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
-                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                      'creator_privacy_hide', 1);
+                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
                  }
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
