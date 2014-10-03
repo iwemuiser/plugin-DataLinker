@@ -281,7 +281,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     private function vertellerVerhalenVerteld($verteller){
         $maxverhalen = 50;
         $verteldeVerhalen = NULL;
-        $amount_tales = __("te veel (max. $maxverhalen resultaten)");
+        $amount_tales = __(" (max. $maxverhalen resultaten)");
         if (metadata("item", 'collection_name') == "Vertellers"){
             $verteldeVerhalen = get_list_elements_by_value($verteller, "Creator", 1, $maxverhalen);
 #            $amount_tales = count($verteldeVerhalen);
