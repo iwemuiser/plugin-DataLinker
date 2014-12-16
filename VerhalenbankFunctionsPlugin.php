@@ -755,7 +755,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $folktale_html .= '<UL STYLE="list-style-type: disc;">';
         $folktale_html .= "<li><a target='manual' href='http://bookstore.ewi.utwente.nl/docs/Handleiding%20Nieuwe%20Volksverhalenbank%20Versie%202.pdf'><b>Handleiding</b> invoer Nederlandse Volksverhalenbank</a><br>";
         $folktale_html .= "<li><a target='motieven' href='http://www.dinor.demon.nl/Thompson/'>Browse/zoek <b>Thompson motieven boomstructuur</b> (website Dirk Kramer)</a><br>";
-        $folktale_html .= "<li><a target='momfer' href='http://www.dinor.demon.nl/Thompson/'>Browse/zoek <b>Thompson motieven thesaurus / lexical search</b> (Momfer van Folgert Karsdorp)</a><br>";
+        $folktale_html .= "<li><a target='momfer' href='http://www.momfer.ml'>Browse/zoek <b>Thompson motieven thesaurus / lexical search</b> (Momfer van Folgert Karsdorp)</a><br>";
         $folktale_html .= "<li><a target='kloekenummers' href='http://www.meertens.knaw.nl/kloeke/'>Zoek <b>Kloeke nummers</b> (website Meertens)</a><br>";
         $folktale_html .= "</UL><br>";
 
