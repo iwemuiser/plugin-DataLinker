@@ -129,12 +129,23 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      * Initialize the plugin.
      */
     public function hookInitialize(){
+        
+        // adding shortcodes for SimplePages
+        
+        add_shortcode('total_folktales', array($this, 'totalfolktales'));
+        
 #        queue_css_url("http://www.meertens.knaw.nl/cms/templates/mi_hetgelaat/js/meertens.databanken.js");
         add_translation_source(dirname(__FILE__) . '/languages');
         // Register the select filter controller plugin.
 		$front = Zend_Controller_Front::getInstance();
 		$front->registerPlugin(new InputFieldFilter);
     }
+
+    public function totalfolktales($args, $view){
+            $collection = get_record_by_id('Collection', 1);
+            return metadata($collection, 'total_items');
+//            return 'This is a very simple shortcode.';
+        }
 
     /**
      * Define the ACL.
