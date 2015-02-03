@@ -18,7 +18,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                 'config_form',
                                 'config',
 #                                'public_items_show_top',
-                                'admin_items_form_item_types',
+#                                'admin_items_form_item_types',             /// MOVED TO ANNOTATOR
                                 'public_items_show_sidebar_top',
                                 'public_items_show_sidebar_ultimate_top',
                                 'admin_head',
@@ -44,7 +44,7 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
     public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights"),//, "Creator"), #CREATOR TEMPORARY -> check Creator(39): privacy(89)
                                             "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date"));
     
-    public $_metadata_to_the_right = array("Dublin Core" => array("Identifier", "Creator", "Contributor", "Type", "Language"),
+    public $_metadata_to_the_right = array("Dublin Core" => array("Identifier", "Type", "Language", "Date", "Coverage", "Creator", "Contributor"),
                                             "Item Type Metadata" => array("Collector"));
 
 
@@ -255,13 +255,13 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     public function hookPublicItemsShowSidebarTop($args){
         $_metadata_fields_public_hide = array_merge($this->_metadata_public_hide["Dublin Core"], $this->_metadata_public_hide["Item Type Metadata"]);
         $item = $args['item'];
-        $html = "";
+        $html = "<div class=\"element-set\">";
         foreach($this->_metadata_to_the_right as $setName=>$elements) {
             foreach($elements as $element) {
                 if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publically AND if a user is logged in
                     if (metadata('item', array($setName, $element), array('all' => true))){ // don't show when empty
                         $html .= '<div id="" class="element">';
-                        $html .= "<h3>" . __($element) . " </h3>";
+                        $html .= "<h3 style=\"margin-bottom:5px\">" . __($element) . " </h3>";
                         foreach(metadata('item', array($setName, $element), array('all' => true)) as $key => $value){
                             $html .= '<div class="element-text">' . $value . "</div>";
                         }
@@ -270,6 +270,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 }
             }
         }
+        $html .= "</div>";
         if ($html){
             print '<div id="item-metadata" class="element">';
             print '<h2>Metadata</h2>';
@@ -356,9 +357,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      */
     public function hookPublicHead($args)
     {
+        
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
         queue_css_file("print", "print"); // queues a css file to print pages
         queue_css_file('linked'); // assumes plugin has a /views/public/css/linked.css file
+        queue_js_file('google_analytics');
         queue_js_file('showHide');
         queue_js_file('search_mod');
         $view = get_view();
@@ -376,6 +379,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
                     add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),         'creator_privacy_hide', 1);
+                    add_filter(array('Display', 'Item', 'Item Type Metadata', 'Contributor'),         'creator_privacy_hide', 1);
                 }
 #                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
