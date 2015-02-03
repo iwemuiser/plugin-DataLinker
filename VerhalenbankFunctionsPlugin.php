@@ -357,11 +357,18 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
      */
     public function hookPublicHead($args)
     {
-        
+        $google_analytics_code = "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];
+            a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-59302345-1', 'auto');
+        ga('send', 'pageview');"; // add to settings
+        queue_js_string($google_analytics_code);
         clear_filters(array('Display', 'Item', 'Dublin Core', 'Title'));
         queue_css_file("print", "print"); // queues a css file to print pages
         queue_css_file('linked'); // assumes plugin has a /views/public/css/linked.css file
-        queue_js_file('google_analytics');
+//        queue_js_file('google_analytics');
         queue_js_file('showHide');
         queue_js_file('search_mod');
         $view = get_view();
