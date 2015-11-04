@@ -72,3 +72,9 @@ msgstr "Alle volksverhalen"
 #: admin_functions.php:26
 msgid "All folktale types"
 msgstr "Alle volksverhaaltypen"
+
+#: everywhere
+msgid "word count group"
+msgstr "aantal woorden groep"
+
+

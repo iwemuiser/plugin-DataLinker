@@ -7,8 +7,8 @@ if (!defined('VERHALENBANKFUNCTIONS_IMAGE_DIR')) {
 }
 
 require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/ElementFunctions.php';
-require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/admin_functions.php';
-require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/public_functions.php';
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/admin_functions.php';
+require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/public_functions.php';
 require_once VERHALENBANKFUNCTIONS_PLUGIN_DIR . '/helpers/DateConversions.php';
 
 class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
@@ -18,14 +18,13 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                 'config_form',
                                 'config',
 #                                'public_items_show_top',
-#                                'admin_items_form_item_types',             /// MOVED TO ANNOTATOR
                                 'public_items_show_sidebar_top',
-                                'public_items_show_sidebar_ultimate_top',
+//                                'public_items_show_sidebar_ultimate_top',
                                 'admin_head',
-#	                            'admin_items_show',
                                 'admin_items_show_sidebar',
                                 'initialize',
                                 'items_browse_sql',
+                                'public_item_show',
                                 'define_acl',);
 	
 	protected $_filters = array('display_elements',
@@ -35,19 +34,34 @@ class VerhalenbankFunctionsPlugin extends Omeka_Plugin_AbstractPlugin
                                 'admin_dashboard_panels',
                                 'admin_dashboard_stats',
                                 'public_navigation_items',
-#                                'define_action_contexts', 
                                 'media_rss_action_context'
-#                                'admin_navigation_main',
-#                                'public_navigation_main'
                                 );
 
-    public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights"),//, "Creator"), #CREATOR TEMPORARY -> check Creator(39): privacy(89)
-                                            "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date"));
+//    public $_metadata_public_hide = array("Dublin Core" => array("Contributor", "Rights"),
+//                                            "Item Type Metadata" => array("Extreme", "Kloeke Georeference", "Entry date", "Corpus"));
+
+    public $_metadata_public_hide = array( array("Dublin Core", "Contributor"), 
+                                            array("Dublin Core", "Rights"),
+                                            array("Dublin Core", "Title"),
+                                            array("Item Type Metadata", "Extreme"),
+                                            array("Item Type Metadata", "Kloeke Georeference"), 
+                                            array("Item Type Metadata", "Entry date"),
+                                            array("Item Type Metadata",  "Corpus"));
+
+    public $_metadata_to_the_right = array( array("Dublin Core", "Identifier"),
+                                            array("Item Type Metadata", "Subgenre"),
+                                            array("Dublin Core", "Type"),
+                                            array("Dublin Core", "Language"),
+                                            array("Dublin Core", "Date"),
+                                            array("Dublin Core", "Coverage"),
+                                            array("Item Type Metadata", "Kloeke Georeference"),
+                                            array("Dublin Core", "Creator"),
+                                            array("Dublin Core", "Contributor"),
+                                            array("Item Type Metadata", "Collector"),
+                                            array("Dublin Core", "Rights"),
+                                            array("Item Type Metadata", "Literary"),
+                                            array("Item Type Metadata", "Extreme"));
     
-    public $_metadata_to_the_right = array("Dublin Core" => array("Identifier", "Type", "Language", "Date", "Coverage", "Creator", "Contributor"),
-                                            "Item Type Metadata" => array("Collector"));
-
-
     function filterMediaRssActionContext($context)
     {
         $context['rssm'] = array('suffix'  => 'rssm', 
@@ -131,7 +145,6 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     public function hookInitialize(){
         
         // adding shortcodes for SimplePages
-        
         add_shortcode('total_folktales', array($this, 'totalfolktales'));
         
 #        queue_css_url("http://www.meertens.knaw.nl/cms/templates/mi_hetgelaat/js/meertens.databanken.js");
@@ -224,27 +237,26 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     **/
     public function filterDisplayElements($elementSets) {
         if (!is_admin_theme()) { #only in the public view!
+            //remove text from view because it is explicitly put there in the php
+            unset($elementSets["Volksverhaal Item Type Metadata"]["Text"]);
             //here we take out the elements that will be shown on the div on the metadata div
-            foreach($elementSets as $setName=>$elements) {
-                foreach($elements as $element) {
-                    foreach($this->_metadata_to_the_right as $sn=>$el){
-                        if(in_array($element->name, $el)){
-                            unset($elementSets[$setName][$element->name]);
-                        }
-                    }
+            foreach($this->_metadata_to_the_right as $set_and_element){
+                if ($set_and_element[0] == "Item Type Metadata"){
+                    unset($elementSets["Volksverhaal " . $set_and_element[0]][$set_and_element[1]]);
+                }
+                else{
+                    unset($elementSets[$set_and_element[0]][$set_and_element[1]]);
                 }
             }
             if ($user = current_user()){ #don't filter this stuff out when logged in
                 return $elementSets;
             }
-            //here we filter the elements that should not be seen by the public
-            foreach($elementSets as $setName=>$elements) {
-                foreach($elements as $element) {
-                    foreach($this->_metadata_public_hide as $sn=>$el){ #omitting the element set names
-                        if(in_array($element->name, $el)){
-                            unset($elementSets[$setName][$element->name]);
-                        }
-                    }
+            foreach($this->_metadata_public_hide as $set_and_element){ #omitting the element set names
+                if ($set_and_element[0] == "Item Type Metadata"){
+                    unset($elementSets["Volksverhaal " . $set_and_element[0]][$set_and_element[1]]);
+                }
+                else{
+                    unset($elementSets[$set_and_element[0]][$set_and_element[1]]);
                 }
             }
             return $elementSets;
@@ -253,23 +265,26 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     }
     
     public function hookPublicItemsShowSidebarTop($args){
-        $_metadata_fields_public_hide = array_merge($this->_metadata_public_hide["Dublin Core"], $this->_metadata_public_hide["Item Type Metadata"]);
         $item = $args['item'];
+        $tdcolor = false;
         $html = "<div class=\"element-set\">";
-        foreach($this->_metadata_to_the_right as $setName=>$elements) {
-            foreach($elements as $element) {
-                if (!in_array($element, $_metadata_fields_public_hide) || $user = current_user()){ //to check if it is allowed to show the item publically AND if a user is logged in
-                    if (metadata('item', array($setName, $element), array('all' => true))){ // don't show when empty
-                        $html .= '<div id="" class="element">';
-                        $html .= "<h3 style=\"margin-bottom:5px\">" . __($element) . " </h3>";
-                        foreach(metadata('item', array($setName, $element), array('all' => true)) as $key => $value){
-                            $html .= '<div class="element-text">' . $value . "</div>";
-                        }
-                        $html .= '</div>';
-                    }
+        $html .= "  <div class=\"element-text\">";
+        $html .= "      <table id=\"metadata\">";
+        foreach($this->_metadata_to_the_right as $set_and_element){
+            if (metadata('item', array($set_and_element[0], $set_and_element[1]), array('all' => true))){ // don't show when empty
+                $tdcolor = !$tdcolor;
+                $html .= '<tr id="metadata" class="element" style="background-color:' . ($tdcolor ? '#FFCCCC' : 'white') . ';">';
+                $html .= '  <td style="color: #ab2929; font-family: Georgia, Times, "Times New Roman", serif; font-size: 1em;">' . __($set_and_element[1]) . ':&nbsp</td>';
+                $html .= '  <td>';
+                foreach(metadata('item', array($set_and_element[0], $set_and_element[1]), array('all' => true)) as $key => $value){
+                    $html .= '' . $value . '';
                 }
+                $html .= '  <td>';
+                $html .= '</tr>';
             }
         }
+        $html .= "      </table>";
+        $html .= "  </div>"; 
         $html .= "</div>";
         if ($html){
             print '<div id="item-metadata" class="element">';
@@ -314,8 +329,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         return $html;
     }
     
-    
-    public function hookPublicItemsShowSidebarUltimateTop($args){
+    public function hookPublicItemShow($args){
+//    public function hookPublicItemsShowSidebarUltimateTop($args){
         print "<ul class='slide-toggle'>";
         print "<li id=\"google_translate_element\"></li>";
         print '<li class="up" id="slidetoggle">'.__("Show browse links").'</li>'; #TRANSLATE Informatie uitklappen
@@ -377,7 +392,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
                     add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),         'creator_privacy_hide', 1);
-                    add_filter(array('Display', 'Item', 'Item Type Metadata', 'Contributor'),         'creator_privacy_hide', 1);
+                    add_filter(array('Display', 'Item', 'Item Type Metadata', 'Contributor'),       'creator_privacy_hide', 1);
                 }
 #                add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
@@ -401,12 +416,13 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference'),   'kloeke_info_retrieve_popup_jquery', 7);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference in Text'),   'kloeke_info_retrieve_popup_jquery', 7);
                 
-                add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5); // should check if there is Text available
+//                add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text', 5); // should check if there is Text available
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text', 6);
                 add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),            'make_urls_clickable_in_text');
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
             }
         }
+        
         if(isset($view->items)) {
             add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language', 20);
         }
@@ -414,14 +430,8 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     }
 
 
-    public function hookAdminItemsFormItemTypes(){
-         queue_js_file('input-autocompleter');
-//         print "AARGG!";
-    }
-    
     public function hookAdminHead($args)
     {
-         queue_js_file('input-autocompleter');
          $view = get_view();
          if(isset($view->item)) {
              if (metadata("item", 'collection_name') == "Vertellers"){
@@ -458,7 +468,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference'),   'kloeke_info_retrieve_popup_jquery', 7);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke Georeference in Text'),   'kloeke_info_retrieve_popup_jquery', 7);
 
-                 add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
+//                 add_filter(array('Display', 'Item', 'Dublin Core', 'Description'),                  'scroll_to_full_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Source'),                       'make_urls_clickable_in_text');
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Literature'),            'make_urls_clickable_in_text');
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Date'),                         'present_dates_as_language_admin', 20);
@@ -592,11 +602,11 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     function filterAdminDashboardStats($stats)
     {   
     	$vvcollection = get_record_by_id('Collection', 1);
-    	$stats[] = array(link_to($vvcollection, null, metadata($vvcollection, 'total_items')), __('Folktales'));
+        $stats[] = array(link_to_items_in_collection(metadata($vvcollection, 'total_items'), $props = array(), $action = 'browse', $collectionObj = $vvcollection), __('Folktales'));
     	$pcollection = get_record_by_id('Collection', 4);
-    	$stats[] = array(link_to($pcollection, null, metadata($pcollection, 'total_items')), __('Narrators'));
+        $stats[] = array(link_to_items_in_collection(metadata($pcollection, 'total_items'), $props = array(), $action = 'browse', $collectionObj = $vvcollection), __('Narrators'));
     	$tpcollection = get_record_by_id('Collection', 3);
-    	$stats[] = array(link_to($tpcollection, null, metadata($tpcollection, 'total_items')), __('Folktale Types'));
+        $stats[] = array(link_to_items_in_collection(metadata($tpcollection, 'total_items'), $props = array(), $action = 'browse', $collectionObj = $vvcollection), __('Folktale Types'));
         return $stats;
     }
 
