@@ -277,7 +277,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 $html .= '  <td style="color: #ab2929; font-family: Georgia, Times, "Times New Roman", serif; font-size: 1em;">' . __($set_and_element[1]) . ':&nbsp</td>';
                 $html .= '  <td>';
                 foreach(metadata('item', array($set_and_element[0], $set_and_element[1]), array('all' => true)) as $key => $value){
-                    $html .= '' . $value . '';
+                    $html .= '' . $value . '<br>';
                 }
                 $html .= '  <td>';
                 $html .= '</tr>';
