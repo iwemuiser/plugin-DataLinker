@@ -487,6 +487,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     * @Returns boolean
     */
     private function get_elements_private_status_by_value($search_string, $element_name = "Title", $collection_id = 4){
+        _log($search_string);
         $db = get_db();
     	$config = $db->getAdapter()->getConfig();
         $db_hack = new Zend_Db_Adapter_Pdo_Mysql(array( //call database for checking
@@ -498,12 +499,14 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             return false;
         }
         $sql = $this->illegal_sql_generator($search_string, false, $element_name, $collection_id);
+        _log($sql);
         $stmt = $db_hack->prepare($sql);
 		$stmt->execute();
 		$itemId = $stmt->fetch();
     	if ($itemId){
     	    if (array_key_exists("id", $itemId)){
         	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
+        	    _log($sql2);
                 $stmt = $db_hack->prepare($sql2);
         		$stmt->execute();
         		$item = $stmt->fetch();
@@ -526,6 +529,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     **/
     private function illegal_sql_generator($search_string, $item_id, $element_name, $collection_id){
         $db = get_db();
+        $search_string = mb_convert_encoding($search_string, "CP1252", "UTF-8");
     	$sql = "
     	SELECT items.id, text
     	FROM {$db->Item} items 
