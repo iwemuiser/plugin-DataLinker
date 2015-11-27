@@ -499,14 +499,14 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             return false;
         }
         $sql = $this->illegal_sql_generator($search_string, false, $element_name, $collection_id);
-        _log($sql);
+#        _log($sql);
         $stmt = $db_hack->prepare($sql);
 		$stmt->execute();
 		$itemId = $stmt->fetch();
     	if ($itemId){
     	    if (array_key_exists("id", $itemId)){
         	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
-        	    _log($sql2);
+#        	    _log($sql2);
                 $stmt = $db_hack->prepare($sql2);
         		$stmt->execute();
         		$item = $stmt->fetch();
