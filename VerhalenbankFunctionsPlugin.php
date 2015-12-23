@@ -389,6 +389,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                 add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),                   'identifier_info_retrieve_popup_jquery', 7);
             }
             if (metadata("item", 'Item Type Name') == "Volksverhaal"){
+                // PRIVACY
                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
                     add_filter(array('Display', 'Item', 'Item Type Metadata', 'Collector'),         'creator_privacy_hide', 1);
@@ -444,9 +445,10 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
                  add_filter(array('Display', 'Item', 'Dublin Core', 'Identifier'),               'identifier_info_retrieve_popup_jquery', 7);
              }
              if (metadata("item", 'Item Type Name') == "Volksverhaal"){
-                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
-                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
-                 }
+                 //when logged in, no privacy!
+//                 if ($this->get_elements_private_status_by_value(metadata($view->item, array('Dublin Core', 'Creator')))) { #in case of existing privacy issues
+//                     add_filter(array('Display', 'Item', 'Dublin Core', 'Creator'),                  'creator_privacy_hide', 1);
+//                 }
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Kloeke georeference'),   'my_kloeke_link_function', 4);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_extreme_hide', 5);
                  add_filter(array('Display', 'Item', 'Item Type Metadata', 'Text'),                  'text_copyright_hide', 6);
@@ -483,7 +485,7 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
     * without going through the official permission system.
     * A dirty dirty solution!
     *
-    * Example: get_elements_private_status_by_value("Muiser, Iwe")
+    * Example: get_elements_private_status_by_value("Muiser, Iwe", [name field], [collection id]) (4=narrators)
     * @Returns boolean
     */
     private function get_elements_private_status_by_value($search_string, $element_name = "Title", $collection_id = 4){
@@ -499,14 +501,12 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
             return false;
         }
         $sql = $this->illegal_sql_generator($search_string, false, $element_name, $collection_id);
-#        _log($sql);
         $stmt = $db_hack->prepare($sql);
 		$stmt->execute();
 		$itemId = $stmt->fetch();
     	if ($itemId){
     	    if (array_key_exists("id", $itemId)){
         	    $sql2 = $this->illegal_sql_generator(false, $itemId["id"], "Privacy Required", $collection_id);
-#        	    _log($sql2);
                 $stmt = $db_hack->prepare($sql2);
         		$stmt->execute();
         		$item = $stmt->fetch();
@@ -778,6 +778,20 @@ De inhoud is daarom afgeschermd, en kan alleen worden geraadpleegd op het Meerte
         $folktale_html .= "<H1>Volksverhalenbank functies</H1><br>";
         $folktale_html .= "<a class='small blue advanced-search-link button' href='/admin/items/search'>Geavanceerd zoeken</a>";
         $folktale_html .= "<a href='/admin/items/add' class='add button small green'>Voeg een item toe</a><br>";
+
+//  http://127.0.0.1/vb2.2.2/admin/visuals/originalmap
+        $verhalenkaart_url = url(array('module'=>'visuals','controller'=>'originalmap'), 
+                                'default'
+                                );
+        $nodenetwork_url = url(array('module'=>'visuals','controller'=>'nodes'), 
+                                'default'
+                                );
+                                
+        $folktale_html .= "<H2>Geavanceerde Visualisaties</H2><br>";
+        $folktale_html .= '<UL STYLE="list-style-type: disc;">';
+        $folktale_html .= "<li><a target='originalmap' href='$verhalenkaart_url'>Orginele verhalenkaart visualisatie en zoekinterface</a><br>";
+        $folktale_html .= "<li><a target='originalnetwork' href='$nodenetwork_url'>Originele verhalennetwerk visualisatie tool</a><br>";
+        $folktale_html .= "</UL><br>";
 
         $folktale_html .= "<H2>Invoerhulp websites / lijsten</H2><br>";
         $folktale_html .= '<UL STYLE="list-style-type: disc;">';
